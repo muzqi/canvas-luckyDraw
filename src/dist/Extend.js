@@ -168,6 +168,7 @@ var RouletteWheel = function (_Global) {
                 r = parseInt(rgb[0] + rgb[1], 16),
                 g = parseInt(rgb[2] + rgb[3], 16),
                 b = parseInt(rgb[4] + rgb[5], 16);
+
             context.fillStyle = "rgba(" + r + ", " + g + ", " + b + ", .72)";
             context.shadowColor = 'rgba(0, 0, 0, .24)';
             context.shadowOffsetX = 0;
