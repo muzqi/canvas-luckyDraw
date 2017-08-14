@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>大转盘</title>
+</head>
+
+<body>
+    <a href="https://github.com/Musiky/canvas-luckyDraw" class="fork">
+        <img style="position: absolute; top: 0; left: 0; border: 0;" src="./src/images/fork-me.png" alt="">
+    </a>
+
+    <div id="roulette_wheel">
+        <canvas id="canvas" width="500" height="500">
+            Canvas not supported
+        </canvas>
+    </div>
+</body>
+
+<script src="./src/dist/Extend_ES5.js"></script>
+<script>
+    let canvas = document.getElementById('canvas'),
+        context = canvas.getContext('2d');
+
+    new RouletteWheel({
+        centerX: canvas.width / 2,
+        centerY: canvas.height / 2,
+        outsideRadius: 180,
+        textRadius: 150,
+
+        awards: [
+            'iphone 8', 'MacBook Pro',
+            '20元停车券', '大保健', '10元话费',
+            'los-未中奖'
+        ]
+    }).render(canvas, context);
+
+</script>
+
+</html>

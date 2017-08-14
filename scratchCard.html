@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>刮刮卡</title>
+</head>
+<body>
+    <a href="https://github.com/Musiky/canvas-luckyDraw" class="fork">
+        <img style="position: absolute; top: 0; left: 0; border: 0;" src="./src/images/fork-me.png" alt="">
+    </a>
+    <canvas id="canvas" width="250" height="50">
+        Canvas not supported
+    </canvas>
+</body>
+
+<script src="./src/dist/Extend_ES5.js"></script>
+<script>
+    var canvas = document.getElementById('canvas'),
+        context = canvas.getContext('2d');
+
+    new ScratchCard({
+        style: 'margin-top: 150px',
+        awardBackgroundImage: './src/images/award.jpg'
+    }).render(canvas, context);
+</script>
+</html>
