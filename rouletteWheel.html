@@ -16,8 +16,6 @@
     <canvas id="canvas" width="500" height="500">
         Canvas not supported
     </canvas>
-
-    <div id="val"></div>
 </body>
 
 <script src="./src/dist/Extend.js"></script>
@@ -26,10 +24,10 @@
         context = canvas.getContext('2d');
 
     new RouletteWheel({
-        centerX: canvas.width / 2,
-        centerY: canvas.height / 2,
+        centerX:       canvas.width / 2,
+        centerY:       canvas.height / 2,
         outsideRadius: 220,
-        textRadius: 180,
+        textRadius:    180,
 
         awards: [
             'iphone 8', 'MacBook Pro',
@@ -39,11 +37,12 @@
 
         finish: function () {
             var val = this.achieveAward.val
-            
+
             if (val.substr(0, 3) === 'los')       alert('很遗憾，您没有中奖')
             else if (val.substr(0, 3) === 'img')  alert('🎉恭喜您，获得了王璐丹😍')
             else                                  alert('🎉恭喜您获得：' + val)
         }
+        
     }).render(canvas, context);
 
 </script>

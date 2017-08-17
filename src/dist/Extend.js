@@ -237,24 +237,27 @@ var RouletteWheel = function (_Global) {
 
                 // 绘制图片
                 if (_this2.awards[i].substr(0, 3) === 'img') {
-                    var self = _this2,
-                        drawImage = function drawImage(self, context) {
+                    var drawImage = function drawImage(self, context) {
                         var size = Math.sin(self.awardRadian) * self.outsideRadius / 2.5;
                         context.save();
                         context.translate(self.centerX + Math.cos(_startRadian + self.awardRadian / 2) * self.textRadius, self.centerY + Math.sin(_startRadian + self.awardRadian / 2) * self.textRadius);
                         context.rotate(_startRadian + self.awardRadian / 2 + Math.PI / 2);
                         context.drawImage(image, -size / 2, 0, size, size);
                         context.restore();
-                    },
+                    };
+
+                    var self = _this2,
                         image = new Image();
                     image.src = _this2.awards[i].replace('img-', '');
 
-                    drawImage(self, context);
-
-                    // 初始化
-                    image.onload = function (e) {
+                    if (!image.complete) {
+                        // 初始化
+                        image.onload = function (e) {
+                            drawImage(self, context);
+                        };
+                    } else {
                         drawImage(self, context);
-                    };
+                    }
                 }
                 // 绘制文字
                 else {
