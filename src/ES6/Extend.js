@@ -216,8 +216,9 @@ class RouletteWheel extends Global {
                     context.restore();
                 }
 
+                // 如果图片未加载，则加载
+                // 如果图片已经加载完成，则直接使用
                 if (!image.complete) {
-                    // 初始化
                     image.onload = function (e) {
                         drawImage(self, context);
                     }

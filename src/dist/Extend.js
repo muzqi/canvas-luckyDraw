@@ -246,12 +246,15 @@ var RouletteWheel = function (_Global) {
                         context.restore();
                     };
 
+                    // 如果图片未加载，则加载
+                    // 如果图片已经加载完成，则直接使用
+
+
                     var self = _this2,
                         image = new Image();
                     image.src = _this2.awards[i].replace('img-', '');
 
                     if (!image.complete) {
-                        // 初始化
                         image.onload = function (e) {
                             drawImage(self, context);
                         };
