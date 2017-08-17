@@ -54,12 +54,48 @@ var Global = function () {
         key: "windowToCanvas",
         value: function windowToCanvas(canvas, e) {
             var bbox = canvas.getBoundingClientRect(),
-                x = this.IsPC() ? e.clientX || event.clientX : e.targetTouches[0].clientX,
-                y = this.IsPC() ? e.clientY || event.clientY : e.targetTouches[0].clientY;
+                x = this.IsPC() ? e.clientX || event.clientX : e.changedTouches[0].clientX,
+                y = this.IsPC() ? e.clientY || event.clientY : e.changedTouches[0].clientY;
 
             return {
                 x: x - bbox.left,
                 y: y - bbox.top
+            };
+        }
+    }, {
+        key: "drawText",
+
+
+        /**
+         * 绘制自动换行的文本
+         * @param {Obj} context
+         * @param {Str} t          文本内容
+         * @param {Num} x          坐标
+         * @param {Num} y          坐标
+         * @param {Num} w          文本限制宽度
+         * @param {Num} lineHeight 行高
+         */
+        value: function drawText(context, t, x, y, w) {
+            var lineHeight = arguments.length > 5 && arguments[5] !== undefined ? arguments[5] : 20;
+
+            var chr = t.split(''),
+                temp = '',
+                row = [];
+
+            for (var a = 0; a < chr.length; a++) {
+                if (context.measureText(temp).width < w) {
+                    ;
+                } else {
+                    row.push(temp);
+                    temp = '';
+                }
+                temp += chr[a];
+            };
+
+            row.push(temp);
+
+            for (var b = 0; b < row.length; b++) {
+                context.fillText(row[b], x, y + (b + 1) * lineHeight);
             };
         }
     }]);
@@ -89,7 +125,6 @@ var Global = function () {
  * @param {Str} buttonColorFrom   可选，箭头圆盘内按钮的渐变色
  * @param {Str} buttonColorTo     可选，箭头圆盘内按钮的渐变色
  * @param {Str} buttonFontColor   可选，按钮文字颜色
- * @param {Num} buttonFontSize    可选，按钮的字体大小
  * 
  * @param {Arr} awards            必选，一个包含奖品的数组集合
  *                                奖品类型分三种：
@@ -100,6 +135,8 @@ var Global = function () {
  * @param {Num} startRadian       可选，默认为0；绘制转盘的起始角度，单位为弧度
  * @param {Num} duration          可选，默认为4000；转盘旋转的时间，单位毫秒
  * @param {Num} velocity          可选，默认为10；转盘旋转的速率
+ * 
+ * @param {Fnc} finish            可选，获取奖品后的回调函数
  */
 
 
@@ -128,24 +165,26 @@ var RouletteWheel = function (_Global) {
         _this.arrowColorTo = options.arrowColorTo || '#FF9D37';
 
         _this.buttonRadius = _this.arrowRadius * .8; // 圆盘内部按钮的半径
-        _this.buttonFont = options.buttonFont || '开 始<br>抽 奖';
+        _this.buttonFont = options.buttonFont || '开始抽奖';
         _this.buttonColorFrom = options.buttonColorFrom || '#FDC964';
         _this.buttonColorTo = options.buttonColorTo || '#FFCB65';
         _this.buttonFontColor = options.buttonFontColor || '#88411F';
-        _this.buttonFontSize = options.buttonFontSize || 20;
 
         _this.awards = options.awards;
         _this.awardsCount = _this.awards.length;
         _this.awardRadian = Math.PI * 2 / _this.awardsCount;
         _this.startRadian = options.startRadian || 0;
 
+        _this.isAnimate = false;
         _this.duration = options.duration || 4000;
         _this.velocity = options.velocity || 10;
         _this.spinningTime = 0;
         _this.spinTotalTime;
         _this.spinningChange;
 
-        _this.value;
+        _this.finish = options.finish;
+
+        _this.achieveAward;
         return _this;
     }
 
@@ -260,13 +299,13 @@ var RouletteWheel = function (_Global) {
             context.restore();
             // ----------
 
-            // ---------- 绘制按钮圆盘
-            context.save();
 
-            var gradient = context.createLinearGradient(this.centerX - this.arrowRadius, this.centerY - this.arrowRadius, this.centerX - this.arrowRadius, this.centerY + this.arrowRadius);
-            gradient.addColorStop(0, this.arrowColorFrom);
-            gradient.addColorStop(1, this.arrowColorTo);
-            context.fillStyle = gradient;
+            // ---------- 绘制按钮圆盘
+            var gradient_1 = context.createLinearGradient(this.centerX - this.arrowRadius, this.centerY - this.arrowRadius, this.centerX - this.arrowRadius, this.centerY + this.arrowRadius);
+            context.save();
+            gradient_1.addColorStop(0, this.arrowColorFrom);
+            gradient_1.addColorStop(1, this.arrowColorTo);
+            context.fillStyle = gradient_1;
 
             context.shadowColor = 'rgba(0, 0, 0, .12)';
             context.shadowOffsetX = 0;
@@ -278,33 +317,26 @@ var RouletteWheel = function (_Global) {
             context.fill();
             context.restore();
             // ---------- 
-        }
-    }, {
-        key: "drawButton",
 
+            // ---------- 绘制按钮
+            var gradient_2 = context.createLinearGradient(this.centerX - this.buttonRadius, this.centerY - this.buttonRadius, this.centerX - this.buttonRadius, this.centerY + this.buttonRadius);
+            context.save();
+            gradient_2.addColorStop(0, this.buttonColorFrom);
+            gradient_2.addColorStop(1, this.buttonColorTo);
+            context.fillStyle = gradient_2;
+            context.beginPath();
+            context.arc(this.centerX, this.centerY, this.buttonRadius, 0, Math.PI * 2, false);
+            context.fill();
+            context.restore();
+            // ----------
 
-        /**
-         * 绘制抽奖按钮
-         * @param {Obj} canvas 
-         * @param {Obj} context 
-         */
-        value: function drawButton(canvas, context) {
-            var _this3 = this;
-
-            var bbox = canvas.getBoundingClientRect(),
-                windowX = this.centerX + bbox.left,
-                windowY = this.centerY + bbox.top;
-
-            var rouletteWheel = document.getElementById('roulette_wheel');
-
-            var button = document.createElement('div');
-            button.innerHTML = this.buttonFont;
-            button.setAttribute('style', "\n                width: " + this.buttonRadius * 2 + "px;\n                height: " + this.buttonRadius * 2 + "px;\n                cursor: pointer;\n                text-align: center;\n                background-image: -webkit-linear-gradient(to top, " + this.buttonColorFrom + ", " + this.arrowColorTo + "); \n                background-image: linear-gradient(to top, " + this.buttonColorFrom + ", " + this.arrowColorTo + ");\n                border-radius: 100%;\n                font-weight: bold;\n                font-size: " + this.buttonFontSize + "px;\n                color: " + this.buttonFontColor + ";\n                position: absolute;\n                left: " + (windowX - this.buttonRadius) + "px;\n                top: " + (windowY - this.buttonRadius) + "px;\n                display: -webkit-box;\n                display: -ms-flexbox;\n                display: flex;\n                -webkit-box-pack: center;\n                -ms-flex-pack: center;\n                justify-content: center;\n                -webkit-box-align: center;\n                -ms-flex-align: center;\n                align-items: center;\n            ");
-            button.addEventListener('click', function (e) {
-                _this3.spin(context);
-            });
-
-            rouletteWheel.appendChild(button);
+            // ---------- 绘制按钮文字
+            context.save();
+            context.fillStyle = this.buttonFontColor;
+            context.font = "bold " + this.buttonRadius / 2 + "px helvetica";
+            _get(RouletteWheel.prototype.__proto__ || Object.getPrototypeOf(RouletteWheel.prototype), "drawText", this).call(this, context, this.buttonFont, this.centerX - this.buttonRadius / 2, this.centerY - this.buttonRadius / 2 - 4, this.buttonRadius * .8, this.buttonRadius / 2 + 4);
+            context.restore();
+            // ----------
         }
     }, {
         key: "rotateWheel",
@@ -318,8 +350,9 @@ var RouletteWheel = function (_Global) {
             this.spinningTime += 30;
 
             if (this.spinningTime >= this.spinTotalTime) {
-                this.value = this.getValue();
-                console.log(this.value);
+                this.isAnimate = false;
+                this.achieveAward = this.getValue();
+                this.finish();
                 return;
             }
 
@@ -341,7 +374,7 @@ var RouletteWheel = function (_Global) {
                 arcd = this.awardRadian * 180 / Math.PI,
                 index = Math.floor((360 - degrees % 360) / arcd);
 
-            if (this.awards[index].substr(0, 3) === 'img') return index;else if (this.awards[index].substr(0, 3) === 'los') return '很遗憾，您未中奖';else return this.awards[index];
+            return { val: this.awards[index], index: index };
         }
     }, {
         key: "spin",
@@ -352,10 +385,11 @@ var RouletteWheel = function (_Global) {
          * @param {Obj} context 
          */
         value: function spin(context) {
+            this.isAnimate = true;
             this.value = '';
             this.spinningTime = 0;
-            this.spinTotalTime = Math.random() * 3 + this.duration;
-            this.spinningChange = Math.random() * 10 + this.velocity;
+            this.spinTotalTime = Math.random() * 500 + this.duration;
+            this.spinningChange = Math.random() * 100 + this.velocity;
             this.rotateWheel(context);
         }
     }, {
@@ -368,8 +402,33 @@ var RouletteWheel = function (_Global) {
          * @param {Obj} context 
          */
         value: function render(canvas, context) {
+            var _this3 = this;
+
             this.drawRouletteWheel(context);
-            this.drawButton(canvas, context);
+
+            ['touchstart', 'mousedown'].forEach(function (event) {
+                canvas.addEventListener(event, function (e) {
+                    if (!_this3.isAnimate) {
+                        var loc = _get(RouletteWheel.prototype.__proto__ || Object.getPrototypeOf(RouletteWheel.prototype), "windowToCanvas", _this3).call(_this3, canvas, e);
+                        context.beginPath();
+                        context.arc(_this3.centerX, _this3.centerY, _this3.buttonRadius, 0, Math.PI * 2, false);
+                        if (context.isPointInPath(loc.x, loc.y)) {
+                            _this3.spin(context);
+                        }
+                    }
+                });
+            });
+
+            canvas.addEventListener('mousemove', function (e) {
+                var loc = _get(RouletteWheel.prototype.__proto__ || Object.getPrototypeOf(RouletteWheel.prototype), "windowToCanvas", _this3).call(_this3, canvas, e);
+                context.beginPath();
+                context.arc(_this3.centerX, _this3.centerY, _this3.buttonRadius, 0, Math.PI * 2, false);
+                if (context.isPointInPath(loc.x, loc.y)) {
+                    canvas.setAttribute('style', 'cursor: pointer');
+                } else {
+                    canvas.setAttribute('style', '');
+                }
+            });
         }
     }]);
 

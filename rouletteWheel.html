@@ -13,11 +13,11 @@
         <img style="position: absolute; top: 0; left: 0; border: 0;" src="./src/images/fork-me.png" alt="">
     </a>
 
-    <div id="roulette_wheel">
-        <canvas id="canvas" width="500" height="500">
-            Canvas not supported
-        </canvas>
-    </div>
+    <canvas id="canvas" width="500" height="500">
+        Canvas not supported
+    </canvas>
+
+    <div id="val"></div>
 </body>
 
 <script src="./src/dist/Extend.js"></script>
@@ -28,14 +28,22 @@
     new RouletteWheel({
         centerX: canvas.width / 2,
         centerY: canvas.height / 2,
-        outsideRadius: 180,
-        textRadius: 150,
+        outsideRadius: 220,
+        textRadius: 180,
 
         awards: [
             'iphone 8', 'MacBook Pro',
             '20元停车券', '大保健', '10元话费',
-            'los-未中奖'
-        ]
+            'los-未中奖', 'img-http://tse2.mm.bing.net/th?id=OIP.lnWeNzoVmFXNZXe4bXh7lQDHEs&w=193&h=291&c=7&qlt=90&o=4&dpr=2&pid=1.7'
+        ],
+
+        finish: function () {
+            var val = this.achieveAward.val
+            
+            if (val.substr(0, 3) === 'los')       alert('很遗憾，您没有中奖')
+            else if (val.substr(0, 3) === 'img')  alert('🎉恭喜您，获得了王璐丹😍')
+            else                                  alert('🎉恭喜您获得：' + val)
+        }
     }).render(canvas, context);
 
 </script>
