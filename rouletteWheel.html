@@ -26,8 +26,7 @@
     new RouletteWheel({
         centerX:       canvas.width / 2,
         centerY:       canvas.height / 2,
-        outsideRadius: 220,
-        textRadius:    180,
+        outsideRadius: 200,
 
         awards: [
             'iphone 8', 'MacBook Pro',
@@ -35,12 +34,8 @@
             'los-未中奖', 'img-http://tse2.mm.bing.net/th?id=OIP.lnWeNzoVmFXNZXe4bXh7lQDHEs&w=193&h=291&c=7&qlt=90&o=4&dpr=2&pid=1.7'
         ],
 
-        finish: function () {
-            var val = this.achieveAward.val
-
-            if (val.substr(0, 3) === 'los')       alert('很遗憾，您没有中奖')
-            else if (val.substr(0, 3) === 'img')  alert('🎉恭喜您，获得了王璐丹😍')
-            else                                  alert('🎉恭喜您获得：' + val)
+        finish: function (index) {
+            alert('🎉恭喜您中得：' + this.awards[index])
         }
         
     }).render(canvas, context);
