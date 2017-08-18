@@ -1,5 +1,5 @@
 ## 引入：
-> 下载 `luckyDraw.min.js` 并引入。不依赖任何第三方库
+> [下载](https://github.com/Musiky/canvas-luckyDraw/blob/master/src/dist/luckyDraw.min.js) `luckyDraw.min.js` 并引入。不依赖任何第三方库
 
 ``` html
 <script src="./src/dist/luckyDraw.min.js"></script>
@@ -11,10 +11,10 @@
 
 [查看演示效果](https://musiky.github.io/canvas-luckyDraw/sudoku.html)
 
-**默认引入：**
+**最简单的使用：**
 ``` html
 <body>
-     <canvas id="canvas" width="500px" height="500px" style="margin: 100px 0 0 100px"></canvas>
+     <canvas id="canvas" width="500px" height="500px"></canvas>
 </body>
 <script src="./src/dist/luckyDraw.min.js"></script>
 <script>
@@ -78,7 +78,7 @@ new Sudoku({
 
 [查看演示效果](https://musiky.github.io/canvas-luckyDraw/rouletteWheel.html)
 
-**默认引入：**
+**最简单的使用：**
 ``` html
 <body>
     <canvas id="canvas" width="500" height="500">
@@ -155,7 +155,7 @@ new RouletteWheel({
 
 [查看演示效果](https://musiky.github.io/canvas-luckyDraw/scratchCard.html)
 
-**默认引入：**
+**最简单的使用：**
 ``` html
 <body>
     <canvas id="canvas" width="250" height="50">
