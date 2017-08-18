@@ -71,44 +71,50 @@ class Global {
         for(let b = 0; b < row.length; b++){
             context.fillText(row[b], x, y + (b + 1) * lineHeight);
         };
+    };
+
+    /**
+     * 定义圆角矩形的方法
+     * @param {Obj} context
+     * @param {Num} cornerX 
+     * @param {Num} cornerY 
+     * @param {Num} width 
+     * @param {Num} height 
+     * @param {Num} cornerRadius 
+     */
+    roundedRect(context, cornerX, cornerY, width, height, cornerRadius) {
+        if (width > 0) context.moveTo(cornerX + cornerRadius, cornerY);
+        else           context.moveTo(cornerX - cornerRadius, cornerY);
+
+        context.arcTo(cornerX + width, cornerY,
+            cornerX + width, cornerY + height,
+            cornerRadius);
+
+        context.arcTo(cornerX + width, cornerY + height,
+            cornerX, cornerY + height,
+            cornerRadius);
+
+        context.arcTo(cornerX, cornerY + height,
+            cornerX, cornerY,
+            cornerRadius);
+
+        if (width > 0) {
+            context.arcTo(cornerX, cornerY,
+                cornerX + cornerRadius, cornerY,
+                cornerRadius);
+        }
+        else {
+            context.arcTo(cornerX, cornerY,
+                cornerX - cornerRadius, cornerY,
+                cornerRadius);
+        }
     }
 }
 
-/**
- * 大转盘
- * 可配置参数
- * @param {Num} centerX           必选，转盘圆心 x 轴坐标
- * @param {Num} centerY           必选，转盘圆心 y 轴坐标
- * @param {Num} outsideRadius     必选，转盘的半径
- * @param {Num} insideRadius      可选，默认为 10；转盘的内圆半径，若该值大于0，则会创建一个半径为该值的镂空圆
- * @param {Num} textRadius        必选，文字环绕转盘形成的圆的半径；该值必须小于 outsideRadius
- * 
- * @param {Str} evenColor         可选，转盘选项序号为偶数的填充颜色 
- * @param {Str} oddColor          可选，转盘选项序号为奇数的填充颜色 
- * @param {Str} loseColor         可选，未中奖表盘颜色 
- * @param {Str} textColor         可选，文字的颜色 
- * @param {Str} font              可选，文字的样式 
- * 
- * @param {Str} arrowColorFrom    可选，箭头圆盘渐变色 
- * @param {Str} arrowColorTo      可选，箭头圆盘渐变色
- * 
- * @param {Str} buttonFont        可选，箭头圆盘内按钮的文字
- * @param {Str} buttonColorFrom   可选，箭头圆盘内按钮的渐变色
- * @param {Str} buttonColorTo     可选，箭头圆盘内按钮的渐变色
- * @param {Str} buttonFontColor   可选，按钮文字颜色
- * 
- * @param {Arr} awards            必选，一个包含奖品的数组集合
- *                                奖品类型分三种：
- *                                1. 纯文字，抽中返回该字符串
- *                                2. 图片，抽中返回该元素的下标，格式：`img-${url}`
- *                                3. 未中奖，抽中返回提示文字，格式：`los-${text}`
- * 
- * @param {Num} startRadian       可选，默认为0；绘制转盘的起始角度，单位为弧度
- * @param {Num} duration          可选，默认为4000；转盘旋转的时间，单位毫秒
- * @param {Num} velocity          可选，默认为10；转盘旋转的速率
- * 
- * @param {Fnc} finish            可选，获取奖品后的回调函数
- */
+// 小写变量为用户定义值，
+// 小写并带前缀 _ 为对象体中进行计算的值
+// 大写变量为无需定义，自动根据条件计算的值
+
 class RouletteWheel extends Global {
     constructor(options) {
         super();
@@ -116,40 +122,44 @@ class RouletteWheel extends Global {
         this.centerX = options.centerX;
         this.centerY = options.centerY;
         this.outsideRadius = options.outsideRadius;
-        this.insideRadius = options.insideRadius || 0;
 
-        this.textRadius = options.textRadius;
         this.evenColor = options.evenColor     || '#FF6766';
         this.oddColor = options.oddColor       || '#FD5757';
         this.loseColor = options.loseColor     || '#F79494'
         this.textColor = options.textColor     || 'White';
-        this.font = options.font               || 'bold 16px Helvetica, Arial';
 
-        this.arrowRadius = this.outsideRadius / 3;     // 圆盘指针的半径
         this.arrowColorFrom = options.arrowColorFrom   || '#FFFC95';
         this.arrowColorTo = options.arrowColorTo       || '#FF9D37';
-
-        this.buttonRadius = this.arrowRadius * .8;     // 圆盘内部按钮的半径
         this.buttonFont = options.buttonFont           || '开始抽奖';
         this.buttonColorFrom = options.buttonColorFrom || '#FDC964';
         this.buttonColorTo = options.buttonColorTo     || '#FFCB65';
         this.buttonFontColor = options.buttonFontColor || '#88411F';
 
         this.awards = options.awards;
-        this.awardsCount = this.awards.length;
-        this.awardRadian = (Math.PI * 2) / this.awardsCount;
-        this.startRadian = options.startRadian || 0;
 
-        this.isAnimate = false;
+        this.startRadian = options.startRadian || 0;
         this.duration = options.duration || 4000;  
-        this.velocity = options.velocity || 10;  
-        this.spinningTime = 0;
-        this.spinTotalTime;
-        this.spinningChange;
+        this.velocity = options.velocity || 10; 
 
         this.finish = options.finish;
 
-        this.achieveAward;        
+        this.INSIDE_RADIUS = 0;
+        this.TEXT_RADIAS = this.outsideRadius * .8;
+        this.FONT_STYLE = `bold ${this.outsideRadius * .07}px Helvetica, Arial`;
+
+        this.ARROW_RADIUS = this.outsideRadius / 3;     // 圆盘指针的半径
+        this.BUTTON_RADIUS = this.ARROW_RADIUS * .8;     // 圆盘内部按钮的半径
+
+        this.AWARDS_COUNT = this.awards.length;
+        this.AWARD_RADIAN = (Math.PI * 2) / this.AWARDS_COUNT;
+
+
+        this._isAnimate = false;
+        this._spinningTime = 0;
+        this._spinTotalTime;
+        this._spinningChange;
+
+        this._canvasStyle;
     };
 
     /**
@@ -177,7 +187,7 @@ class RouletteWheel extends Global {
         // ----------
 
         // --------- 绘制表盘中的色块，和对应的文字与图片
-        for (let i = 0; i < this.awardsCount; i ++) {
+        for (let i = 0; i < this.AWARDS_COUNT; i ++) {
             // 绘制色块
             context.save();
 
@@ -185,12 +195,12 @@ class RouletteWheel extends Global {
             else if (i % 2 === 0) context.fillStyle = this.evenColor;
             else                  context.fillStyle = this.oddColor;
 
-            let _startRadian = this.startRadian + this.awardRadian * i,
-                _endRadian =   _startRadian + this.awardRadian;
+            let _startRadian = this.startRadian + this.AWARD_RADIAN * i,
+                _endRadian =   _startRadian + this.AWARD_RADIAN;
 
             context.beginPath();
             context.arc(this.centerX, this.centerY, this.outsideRadius - 5, _startRadian, _endRadian, false);
-            context.arc(this.centerX, this.centerY, this.insideRadius, _endRadian, _startRadian, true);
+            context.arc(this.centerX, this.centerY, this.INSIDE_RADIUS, _endRadian, _startRadian, true);
             context.fill();
             context.restore();
 
@@ -201,13 +211,13 @@ class RouletteWheel extends Global {
                     image.src = this.awards[i].replace('img-', '');
 
                 function drawImage(self, context) {
-                    let size = Math.sin(self.awardRadian) * self.outsideRadius / 2.5;
+                    let size = Math.sin(self.AWARD_RADIAN) * self.outsideRadius / 2.5;
                     context.save();
                     context.translate(
-                        self.centerX + Math.cos(_startRadian + self.awardRadian / 2) * self.textRadius,
-                        self.centerY + Math.sin(_startRadian + self.awardRadian / 2) * self.textRadius
+                        self.centerX + Math.cos(_startRadian + self.AWARD_RADIAN / 2) * self.TEXT_RADIAS,
+                        self.centerY + Math.sin(_startRadian + self.AWARD_RADIAN / 2) * self.TEXT_RADIAS
                     )
-                    context.rotate(_startRadian + self.awardRadian / 2 + Math.PI / 2);
+                    context.rotate(_startRadian + self.AWARD_RADIAN / 2 + Math.PI / 2);
                     context.drawImage(
                         image, 
                         - size / 2, 0,
@@ -232,12 +242,12 @@ class RouletteWheel extends Global {
                 let award = this.awards[i].substr(0, 3) === 'los'?'未中奖':this.awards[i];
                 context.save();
                 context.fillStyle = this.textColor;
-                context.font = this.font;
+                context.font = this.FONT_STYLE;
                 context.translate(
-                    this.centerX + Math.cos(_startRadian + this.awardRadian / 2) * this.textRadius,
-                    this.centerY + Math.sin(_startRadian + this.awardRadian / 2) * this.textRadius
+                    this.centerX + Math.cos(_startRadian + this.AWARD_RADIAN / 2) * this.TEXT_RADIAS,
+                    this.centerY + Math.sin(_startRadian + this.AWARD_RADIAN / 2) * this.TEXT_RADIAS
                 );
-                context.rotate(_startRadian + this.awardRadian / 2 + Math.PI / 2);
+                context.rotate(_startRadian + this.AWARD_RADIAN / 2 + Math.PI / 2);
                 context.fillText(award, -context.measureText(award).width / 2, 0);
                 context.restore();
             }
@@ -246,7 +256,7 @@ class RouletteWheel extends Global {
 
         // ---------- 绘制按钮指针
         let moveX = this.centerX,
-            moveY = this.centerY - this.arrowRadius + 5;
+            moveY = this.centerY - this.ARROW_RADIUS + 5;
 
         context.save();
         context.fillStyle = this.arrowColorFrom;
@@ -272,8 +282,8 @@ class RouletteWheel extends Global {
 
         // ---------- 绘制按钮圆盘
         let gradient_1 = context.createLinearGradient(
-            this.centerX - this.arrowRadius, this.centerY - this.arrowRadius,
-            this.centerX - this.arrowRadius, this.centerY + this.arrowRadius
+            this.centerX - this.ARROW_RADIUS, this.centerY - this.ARROW_RADIUS,
+            this.centerX - this.ARROW_RADIUS, this.centerY + this.ARROW_RADIUS
         );
         context.save();
         gradient_1.addColorStop(0, this.arrowColorFrom);
@@ -286,22 +296,22 @@ class RouletteWheel extends Global {
         context.shadowBlur = 15;
 
         context.beginPath();
-        context.arc(this.centerX, this.centerY, this.arrowRadius, 0, Math.PI * 2, false);
+        context.arc(this.centerX, this.centerY, this.ARROW_RADIUS, 0, Math.PI * 2, false);
         context.fill();
         context.restore();
         // ---------- 
 
         // ---------- 绘制按钮
         let gradient_2 = context.createLinearGradient(
-            this.centerX - this.buttonRadius, this.centerY - this.buttonRadius,
-            this.centerX - this.buttonRadius, this.centerY + this.buttonRadius
+            this.centerX - this.BUTTON_RADIUS, this.centerY - this.BUTTON_RADIUS,
+            this.centerX - this.BUTTON_RADIUS, this.centerY + this.BUTTON_RADIUS
         );
         context.save();
         gradient_2.addColorStop(0, this.buttonColorFrom);
         gradient_2.addColorStop(1, this.buttonColorTo);
         context.fillStyle = gradient_2;
         context.beginPath();
-        context.arc(this.centerX, this.centerY, this.buttonRadius, 0, Math.PI * 2, false);
+        context.arc(this.centerX, this.centerY, this.BUTTON_RADIUS, 0, Math.PI * 2, false);
         context.fill();
         context.restore();
         // ----------
@@ -309,13 +319,13 @@ class RouletteWheel extends Global {
         // ---------- 绘制按钮文字
         context.save();
         context.fillStyle = this.buttonFontColor;
-        context.font = `bold ${this.buttonRadius / 2}px helvetica`;
+        context.font = `bold ${this.BUTTON_RADIUS / 2}px helvetica`;
         super.drawText(
             context, 
             this.buttonFont, 
-            this.centerX - this.buttonRadius / 2, this.centerY - this.buttonRadius / 2 - 4, 
-            this.buttonRadius * .8,
-            this.buttonRadius / 2 + 4
+            this.centerX - this.BUTTON_RADIUS / 2, this.centerY - this.BUTTON_RADIUS / 2 - 4, 
+            this.BUTTON_RADIUS * .8,
+            this.BUTTON_RADIUS / 2 + 4
         );
         context.restore();
         // ----------
@@ -326,18 +336,17 @@ class RouletteWheel extends Global {
      * @param {Obj} context 
      */
     rotateWheel(context) {
-        this.spinningTime += 30;
+        this._spinningTime += 30;
 
-        if (this.spinningTime >= this.spinTotalTime) {
-            this.isAnimate = false;
-            this.achieveAward = this.getValue(); 
-            this.finish();
+        if (this._spinningTime >= this._spinTotalTime) {
+            this._isAnimate = false;
+            if (this.finish) this.finish(this.getValue());
             return;
         }
         
-        let _spinningChange = (this.spinningChange - (super.easeOut(this.spinningTime, 0, this.spinningChange, this.spinTotalTime)))
+        let __spinningChange = (this._spinningChange - (super.easeOut(this._spinningTime, 0, this._spinningChange, this._spinTotalTime)))
                               * (Math.PI / 180);
-        this.startRadian += _spinningChange;
+        this.startRadian += __spinningChange;
 
         this.drawRouletteWheel(context);
         window.requestAnimationFrame(this.rotateWheel.bind(this, context));
@@ -348,10 +357,10 @@ class RouletteWheel extends Global {
      */
     getValue() {
         let degrees = this.startRadian * 180 / Math.PI + 90,
-            arcd = this.awardRadian * 180 / Math.PI,
+            arcd = this.AWARD_RADIAN * 180 / Math.PI,
             index = Math.floor((360 - degrees % 360) / arcd);
 
-        return { val: this.awards[index], index };
+        return index;
     };
 
     /**
@@ -359,11 +368,11 @@ class RouletteWheel extends Global {
      * @param {Obj} context 
      */
     spin(context) {
-        this.isAnimate = true;
+        this._isAnimate = true;
         this.value = '';
-        this.spinningTime = 0;
-        this.spinTotalTime = Math.random() * 500 + this.duration;
-        this.spinningChange = Math.random() * 100 + this.velocity;
+        this._spinningTime = 0;
+        this._spinTotalTime = Math.random() * 500 + this.duration;
+        this._spinningChange = Math.random() * 100 + this.velocity;
         this.rotateWheel(context);
     };
 
@@ -373,14 +382,15 @@ class RouletteWheel extends Global {
      * @param {Obj} context 
      */
     render(canvas, context) {
+        this._canvasStyle = canvas.getAttribute('style');
         this.drawRouletteWheel(context);
 
         ['touchstart', 'mousedown'].forEach((event) => {
             canvas.addEventListener(event, (e) => {
-                if (!this.isAnimate) {
+                if (!this._isAnimate) {
                     let loc = super.windowToCanvas(canvas, e);
                     context.beginPath();
-                    context.arc(this.centerX, this.centerY, this.buttonRadius, 0, Math.PI * 2, false);
+                    context.arc(this.centerX, this.centerY, this.BUTTON_RADIUS, 0, Math.PI * 2, false);
                     if (context.isPointInPath(loc.x, loc.y)) {
                         this.spin(context);
                     }
@@ -391,35 +401,27 @@ class RouletteWheel extends Global {
         canvas.addEventListener('mousemove', (e) => {
             let loc = super.windowToCanvas(canvas, e);
             context.beginPath();
-            context.arc(this.centerX, this.centerY, this.buttonRadius, 0, Math.PI * 2, false);
+            context.arc(this.centerX, this.centerY, this.BUTTON_RADIUS, 0, Math.PI * 2, false);
             if (context.isPointInPath(loc.x, loc.y)) {
-                canvas.setAttribute('style', 'cursor: pointer');
+                canvas.setAttribute('style', `cursor: pointer;${this._canvasStyle}`);
             } else {
-                canvas.setAttribute('style', '');
+                canvas.setAttribute('style', this._canvasStyle);
             }
         });
     }
 }
 
-/**
- * 刮刮卡
- * 可配置参数
- * @param {Str} style                 可选，传入一个 css 字符串，设置刮刮卡的样式
- * @param {Str} awardBackgroundImage  必选，传入一个图片路径，设置刮刮卡的奖品类型
- * @param {Num} eraserSize            可选，默认15px，橡皮擦的半径大小
- * @param {Str} coverColor            可选，默认 #b5b5b5，涂层的颜色
- */
 class ScratchCard extends Global {
     constructor (options) {
         super();
-
-        this.dragging = false;
 
         this.style = options.style;
         this.awardBackgroundImage = options.awardBackgroundImage;
 
         this.eraserSize = options.eraserSize || 15;
         this.coverColor = options.coverColor || '#b5b5b5';
+
+        this._dragging = false;
     };
 
     /**
@@ -463,7 +465,7 @@ class ScratchCard extends Global {
         ['touchstart', 'mousedown'].forEach((event) => {
             canvas.addEventListener(event, (e) => {
                 let loc = super.windowToCanvas(canvas, e);
-                this.dragging = true;
+                this._dragging = true;
                 this.drawEraser(context, loc);
             })
         });
@@ -471,17 +473,340 @@ class ScratchCard extends Global {
         ['touchmove', 'mousemove'].forEach((event) => {
             canvas.addEventListener(event, (e) => {
                 let loc;
-                if (this.dragging) {
+                if (this._dragging) {
                     loc = super.windowToCanvas(canvas, e);
                     this.drawEraser(context, loc);
                 }
             })
         });
 
+
         ['touchend', 'mouseup'].forEach((event) => {
             canvas.addEventListener(event, (e) => {
-                this.dragging = false;
+                this._dragging = false;
             })
         });
     }
+}
+
+class Sudoku extends Global {
+    constructor (options) {
+        super();
+        
+        this.awardsRowLen =     options.awardsRowLen || 3;
+        this.awards =           options.awards;
+        this.sudokuSize =       options.sudokuSize;
+        this.sudokuItemRadius = options.sudokuItemRadius || 8;
+
+        this.sudokuItemUnactiveColor = options.sudokuItemUnactiveColor             || 'rgb(255, 235, 236)';
+        this.sudokuItemUnactiveTxtColor = options.sudokuItemUnactiveTxtColor       || 'rgb(48, 44, 43)';
+        this.sudokuItemUnactiveShadowColor = options.sudokuItemUnactiveShadowColor || 'rgb(255, 193, 200)';
+
+        this.sudokuItemActiveColor = options.sudokuItemActiveColor                 || 'rgb(254, 150, 51)';
+        this.sudokuItemActiveTxtColor = options.sudokuItemActiveTxtColor           || 'rgb(255, 255, 255)';
+        this.sudokuItemActiveShadowColor = options.sudokuItemActiveShadowColor     || 'rgb(255, 193, 200)';
+
+        this.buttonColor = options.buttonColor             || 'rgb(255, 216, 1)';
+        this.buttonTxtColor = options.buttonTxtColor       || 'rgb(172, 97, 1)';
+        this.buttonShadowColor = options.buttonShadowColor || 'rgb(253, 177, 1)';
+
+        this.duration = options.duration || 4000;
+        this.velocity = options.velocity || 300;
+
+        this.finish = options.finish;
+
+        this.AWARDS_STEP = this.awardsRowLen - 1;
+        this.AWARDS_LEN =  this.AWARDS_STEP * 4;
+
+        this.LETF_TOP_POINT =     0;
+        this.RIGHT_TOP_POINT =    this.AWARDS_STEP;
+        this.RIGHT_BOTTOM_POINT = this.AWARDS_STEP * 2;
+        this.LEFT_BOTTOM_POINT =  this.AWARDS_STEP * 2 + this.AWARDS_STEP;
+
+        this.SUDOKU_ITEM_MARGIN =   (this.sudokuSize / this.awardsRowLen) / 6;
+        this.SUDOKU_ITEM_SIZE =     (this.sudokuSize / this.awardsRowLen) - this.SUDOKU_ITEM_MARGIN;
+        this.SUDOKU_ITEM_TXT_SIZE = `bold ${this.SUDOKU_ITEM_SIZE * .12}px Helvetica`;
+
+        this.BUTTON_SIZE = this.sudokuSize - (this.SUDOKU_ITEM_SIZE * 2 + this.SUDOKU_ITEM_MARGIN * 3);
+        this.BUTTON_TXT_SIZE = `bold ${this.BUTTON_SIZE * .12}px Helvetica`;
+
+        this._positions = [];
+        this._buttonPosition = [];
+
+        this._isAnimate = false;
+        this._jumpIndex = Math.floor(Math.random() * this.AWARDS_LEN);
+        this._jumpingTime = 0;
+        this._jumpTotalTime;
+        this._jumpChange;
+
+        this._canvasStyle;
+
+    };
+
+    drawSudoku(context) {
+        context.clearRect(0, 0, canvas.width, canvas.height);
+
+        // 顶点坐标
+        let maxPosition = this.AWARDS_STEP * this.SUDOKU_ITEM_SIZE + this.AWARDS_STEP * this.SUDOKU_ITEM_MARGIN;
+        
+        for (let i = 0; i < this.AWARDS_LEN; i++) {
+            // ----- 左上顶点
+            if (i >= this.LETF_TOP_POINT && i < this.RIGHT_TOP_POINT) {
+                let row = i,
+                    x = row * this.SUDOKU_ITEM_SIZE + row * this.SUDOKU_ITEM_MARGIN,
+                    y = 0;
+
+                this._positions.push({x, y});
+
+                this.drawSudokuItem(
+                    context,
+                    x, y,
+                    this.SUDOKU_ITEM_SIZE,
+                    this.sudokuItemRadius,
+                    this.awards[i],
+                    this.SUDOKU_ITEM_TXT_SIZE,
+                    this.sudokuItemUnactiveTxtColor,
+                    this.sudokuItemUnactiveColor,
+                    this.sudokuItemUnactiveShadowColor
+                )
+            }
+            // -----
+
+            // ----- 右上顶点
+            if (i >= this.RIGHT_TOP_POINT && i < this.RIGHT_BOTTOM_POINT) {
+                let row = Math.abs(this.AWARDS_STEP - i),
+                    x = maxPosition,
+                    y = row * this.SUDOKU_ITEM_SIZE + row * this.SUDOKU_ITEM_MARGIN;
+
+                this._positions.push({x, y});
+
+                this.drawSudokuItem(
+                    context,
+                    x, y,
+                    this.SUDOKU_ITEM_SIZE,
+                    this.sudokuItemRadius,
+                    this.awards[i],
+                    this.SUDOKU_ITEM_TXT_SIZE,
+                    this.sudokuItemUnactiveTxtColor,
+                    this.sudokuItemUnactiveColor,
+                    this.sudokuItemUnactiveShadowColor
+                )
+            }
+            // -----
+
+            // ----- 左下顶点
+            if (i >= this.RIGHT_BOTTOM_POINT && i < this.LEFT_BOTTOM_POINT) {
+                let row = Math.abs(this.AWARDS_STEP * 2 - i),
+                    reverseRow = Math.abs(row - this.AWARDS_STEP),
+                    x = reverseRow * this.SUDOKU_ITEM_SIZE + reverseRow * this.SUDOKU_ITEM_MARGIN,
+                    y = maxPosition;
+
+                this._positions.push({x, y});
+
+                this.drawSudokuItem(
+                    context,
+                    x, y,
+                    this.SUDOKU_ITEM_SIZE,
+                    this.sudokuItemRadius,
+                    this.awards[i],
+                    this.SUDOKU_ITEM_TXT_SIZE,
+                    this.sudokuItemUnactiveTxtColor,
+                    this.sudokuItemUnactiveColor,
+                    this.sudokuItemUnactiveShadowColor
+                )
+            }
+            // -----
+
+            // ----- 左上顶点
+            if (i >= this.LEFT_BOTTOM_POINT) {
+                let row = Math.abs(this.AWARDS_STEP * 3 - i),
+                    reverseRow = Math.abs(row - this.AWARDS_STEP),
+                    x = 0,
+                    y = reverseRow * this.SUDOKU_ITEM_SIZE + reverseRow * this.SUDOKU_ITEM_MARGIN;
+
+                this._positions.push({x, y});
+
+                this.drawSudokuItem(
+                    context,
+                    x, y,
+                    this.SUDOKU_ITEM_SIZE,
+                    this.sudokuItemRadius,
+                    this.awards[i],
+                    this.SUDOKU_ITEM_TXT_SIZE,
+                    this.sudokuItemUnactiveTxtColor,
+                    this.sudokuItemUnactiveColor,
+                    this.sudokuItemUnactiveShadowColor
+                )
+            }
+        };
+
+        this.drawButton(context);
+    };
+
+    drawSudokuItem(context, x, y, size, radius, text, txtSize, txtColor, bgColor, shadowColor) {
+        // ----- 绘制方块
+        context.save();
+        context.fillStyle = bgColor;
+        context.shadowOffsetX = 0;
+        context.shadowOffsetY = 4;
+        context.shadowBlur = 0;
+        context.shadowColor = shadowColor;
+        context.beginPath();
+        super.roundedRect(
+            context, 
+            x, y,
+            size, size, 
+            radius
+        );
+        context.fill();
+        context.restore();
+        // -----
+
+        // ----- 绘制图片与文字
+        if (text) {
+            if (text.substr(0, 3) === 'img') {
+                let textFormat = text.replace('img-', ''),
+                    image = new Image();
+                    image.src = textFormat;
+
+                function drawImage() {
+                    context.drawImage(
+                        image, 
+                        x + (size * .2 / 2), y + (size * .2 / 2), 
+                        size * .8, size * .8
+                    );
+                };
+
+                if (!image.complete) {
+                    image.onload = function (e) {
+                        drawImage();
+                    }
+                } else {
+                    drawImage();
+                }
+            }
+            else {
+                context.save();
+                context.fillStyle = txtColor;
+                context.font = txtSize;
+                context.translate(
+                    x + this.SUDOKU_ITEM_SIZE / 2 - context.measureText(text).width / 2,
+                    y + this.SUDOKU_ITEM_SIZE / 2 + 6
+                );
+                context.fillText(text, 0, 0);
+                context.restore();
+            }
+        }
+        // -----
+    };
+
+    drawButton(context) {
+        let x = this.SUDOKU_ITEM_SIZE + this.SUDOKU_ITEM_MARGIN,
+            y = this.SUDOKU_ITEM_SIZE + this.SUDOKU_ITEM_MARGIN;
+
+        // ----- 绘制背景
+        context.save();
+        context.fillStyle = this.buttonColor;
+        context.shadowOffsetX = 0;
+        context.shadowOffsetY = 4;
+        context.shadowBlur = 0;
+        context.shadowColor = this.buttonShadowColor;
+        context.beginPath();
+        super.roundedRect(
+            context, x, y,
+            this.BUTTON_SIZE, this.BUTTON_SIZE, 
+            this.sudokuItemRadius,
+            this.buttonColor,
+            this.buttonShadowColor
+        );
+        context.fill();
+        context.restore();
+        // -----
+
+        // ----- 绘制文字
+        context.save();
+        context.fillStyle = this.buttonTxtColor;
+        context.font = this.BUTTON_TXT_SIZE;
+        context.translate(
+            x + this.BUTTON_SIZE / 2 - context.measureText('立即抽奖').width / 2, 
+            y + this.BUTTON_SIZE / 2 + 10
+        );
+        context.fillText('立即抽奖', 0, 0);
+        context.restore();
+        // -----
+
+        this._buttonPosition = {x, y};
+    };
+
+    createButtonPath(context) {
+        context.beginPath();
+        super.roundedRect(
+            context,
+            this._buttonPosition.x, this._buttonPosition.y,
+            this.BUTTON_SIZE, this.BUTTON_SIZE, 
+            this.sudokuItemRadius
+        );
+    };
+
+    animate(context) {
+        this.isAnimate = true;
+
+        if (this._jumpIndex < this.AWARDS_LEN - 1)        this._jumpIndex ++;
+        else if (this._jumpIndex >= this.AWARDS_LEN -1 )  this._jumpIndex = 0;
+
+        this._jumpingTime += 100;
+
+        if (this._jumpingTime >= this._jumpTotalTime) {
+            this.isAnimate = false;
+            if (this.finish) {
+                if (this._jumpIndex != 0)       this.finish(this._jumpIndex - 1)
+                else if (this._jumpIndex === 0) this.finish(this.AWARDS_LEN - 1);
+            }
+            return;
+        };
+
+        this.drawSudoku(context);
+        this.drawSudokuItem(
+            context,
+            this._positions[this._jumpIndex].x, this._positions[this._jumpIndex].y,
+            this.SUDOKU_ITEM_SIZE, this.sudokuItemRadius, 
+            this.awards[this._jumpIndex], this.SUDOKU_ITEM_TXT_SIZE, this.sudokuItemActiveTxtColor,
+            this.sudokuItemActiveColor,
+            this.sudokuItemActiveShadowColor
+        );
+
+        setTimeout(this.animate.bind(this, context), 50 + super.easeOut(this._jumpingTime, 0, this._jumpChange, this._jumpTotalTime));
+    };
+
+    render(canvas, context) {
+        this._canvasStyle = canvas.getAttribute('style');
+        this.drawSudoku(context);
+
+        ['mousedown', 'touchstart'].forEach((event) => {
+            canvas.addEventListener(event, (e) => {
+                let loc = super.windowToCanvas(canvas, e);
+
+                this.createButtonPath(context);
+
+                if (context.isPointInPath(loc.x, loc.y) && !this.isAnimate) {
+                    this._jumpingTime = 0;
+                    this._jumpTotalTime = Math.random() * 1000 + this.duration;
+                    this._jumpChange = Math.random() * 3 + this.velocity;
+                    this.animate(context);
+                }
+            })
+        });
+
+        canvas.addEventListener('mousemove', (e) => {
+            let loc2 = super.windowToCanvas(canvas, e);
+            this.createButtonPath(context);
+
+            if (context.isPointInPath(loc2.x, loc2.y)) {
+                canvas.setAttribute('style', `cursor: pointer;${this._canvasStyle}`);
+            } else {
+                canvas.setAttribute('style', this._canvasStyle);
+            }
+        })
+    }
+
 }

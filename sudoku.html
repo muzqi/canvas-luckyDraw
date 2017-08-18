@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>九宫格</title>
+</head>
+<body>
+    <a href="https://github.com/Musiky/canvas-luckyDraw" class="fork">
+        <img style="position: absolute; top: 0; left: 0; border: 0;" src="./src/images/fork-me.png" alt="">
+    </a>
+
+     <canvas id="canvas" width="500px" height="500px" style="margin: 100px 0 0 100px"></canvas>
+</body>
+<script src="./src/dist/Extend.js"></script>
+<script>
+    var canvas = document.getElementById('canvas'),
+        context = canvas.getContext('2d');
+
+    new Sudoku({
+        sudokuSize: canvas.width,
+        awardsRowLen: 3,
+
+        awards: [
+            '30元话费', 'iphone8', '未中奖', 
+            'Macbook pro', 'img-http://tse4.mm.bing.net/th?id=OIP.5Oa_ZZeDMu0JOFKu-5NDGADIEs&w=137&h=201&c=7&qlt=90&o=4&dpr=2&pid=1.7', '火星一日游', 
+            '未中奖', 'img-http://tse2.mm.bing.net/th?id=OIP.lnWeNzoVmFXNZXe4bXh7lQDHEs&w=193&h=291&c=7&qlt=90&o=4&dpr=2&pid=1.7'
+        ],
+        
+        finish: function (index) {
+            alert('🎉恭喜您中得：' + this.awards[index])
+        }
+    }).render(canvas, context);
+</script>
+</html>

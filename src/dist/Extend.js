@@ -98,47 +98,42 @@ var Global = function () {
                 context.fillText(row[b], x, y + (b + 1) * lineHeight);
             };
         }
+    }, {
+        key: "roundedRect",
+
+
+        /**
+         * 定义圆角矩形的方法
+         * @param {Obj} context
+         * @param {Num} cornerX 
+         * @param {Num} cornerY 
+         * @param {Num} width 
+         * @param {Num} height 
+         * @param {Num} cornerRadius 
+         */
+        value: function roundedRect(context, cornerX, cornerY, width, height, cornerRadius) {
+            if (width > 0) context.moveTo(cornerX + cornerRadius, cornerY);else context.moveTo(cornerX - cornerRadius, cornerY);
+
+            context.arcTo(cornerX + width, cornerY, cornerX + width, cornerY + height, cornerRadius);
+
+            context.arcTo(cornerX + width, cornerY + height, cornerX, cornerY + height, cornerRadius);
+
+            context.arcTo(cornerX, cornerY + height, cornerX, cornerY, cornerRadius);
+
+            if (width > 0) {
+                context.arcTo(cornerX, cornerY, cornerX + cornerRadius, cornerY, cornerRadius);
+            } else {
+                context.arcTo(cornerX, cornerY, cornerX - cornerRadius, cornerY, cornerRadius);
+            }
+        }
     }]);
 
     return Global;
 }();
 
-/**
- * 大转盘
- * 可配置参数
- * @param {Num} centerX           必选，转盘圆心 x 轴坐标
- * @param {Num} centerY           必选，转盘圆心 y 轴坐标
- * @param {Num} outsideRadius     必选，转盘的半径
- * @param {Num} insideRadius      可选，默认为 10；转盘的内圆半径，若该值大于0，则会创建一个半径为该值的镂空圆
- * @param {Num} textRadius        必选，文字环绕转盘形成的圆的半径；该值必须小于 outsideRadius
- * 
- * @param {Str} evenColor         可选，转盘选项序号为偶数的填充颜色 
- * @param {Str} oddColor          可选，转盘选项序号为奇数的填充颜色 
- * @param {Str} loseColor         可选，未中奖表盘颜色 
- * @param {Str} textColor         可选，文字的颜色 
- * @param {Str} font              可选，文字的样式 
- * 
- * @param {Str} arrowColorFrom    可选，箭头圆盘渐变色 
- * @param {Str} arrowColorTo      可选，箭头圆盘渐变色
- * 
- * @param {Str} buttonFont        可选，箭头圆盘内按钮的文字
- * @param {Str} buttonColorFrom   可选，箭头圆盘内按钮的渐变色
- * @param {Str} buttonColorTo     可选，箭头圆盘内按钮的渐变色
- * @param {Str} buttonFontColor   可选，按钮文字颜色
- * 
- * @param {Arr} awards            必选，一个包含奖品的数组集合
- *                                奖品类型分三种：
- *                                1. 纯文字，抽中返回该字符串
- *                                2. 图片，抽中返回该元素的下标，格式：`img-${url}`
- *                                3. 未中奖，抽中返回提示文字，格式：`los-${text}`
- * 
- * @param {Num} startRadian       可选，默认为0；绘制转盘的起始角度，单位为弧度
- * @param {Num} duration          可选，默认为4000；转盘旋转的时间，单位毫秒
- * @param {Num} velocity          可选，默认为10；转盘旋转的速率
- * 
- * @param {Fnc} finish            可选，获取奖品后的回调函数
- */
-
+// 小写变量为用户定义值，
+// 小写并带前缀 _ 为对象体中进行计算的值
+// 大写变量为无需定义，自动根据条件计算的值
 
 var RouletteWheel = function (_Global) {
     _inherits(RouletteWheel, _Global);
@@ -151,40 +146,43 @@ var RouletteWheel = function (_Global) {
         _this.centerX = options.centerX;
         _this.centerY = options.centerY;
         _this.outsideRadius = options.outsideRadius;
-        _this.insideRadius = options.insideRadius || 0;
 
-        _this.textRadius = options.textRadius;
         _this.evenColor = options.evenColor || '#FF6766';
         _this.oddColor = options.oddColor || '#FD5757';
         _this.loseColor = options.loseColor || '#F79494';
         _this.textColor = options.textColor || 'White';
-        _this.font = options.font || 'bold 16px Helvetica, Arial';
 
-        _this.arrowRadius = _this.outsideRadius / 3; // 圆盘指针的半径
         _this.arrowColorFrom = options.arrowColorFrom || '#FFFC95';
         _this.arrowColorTo = options.arrowColorTo || '#FF9D37';
-
-        _this.buttonRadius = _this.arrowRadius * .8; // 圆盘内部按钮的半径
         _this.buttonFont = options.buttonFont || '开始抽奖';
         _this.buttonColorFrom = options.buttonColorFrom || '#FDC964';
         _this.buttonColorTo = options.buttonColorTo || '#FFCB65';
         _this.buttonFontColor = options.buttonFontColor || '#88411F';
 
         _this.awards = options.awards;
-        _this.awardsCount = _this.awards.length;
-        _this.awardRadian = Math.PI * 2 / _this.awardsCount;
-        _this.startRadian = options.startRadian || 0;
 
-        _this.isAnimate = false;
+        _this.startRadian = options.startRadian || 0;
         _this.duration = options.duration || 4000;
         _this.velocity = options.velocity || 10;
-        _this.spinningTime = 0;
-        _this.spinTotalTime;
-        _this.spinningChange;
 
         _this.finish = options.finish;
 
-        _this.achieveAward;
+        _this.INSIDE_RADIUS = 0;
+        _this.TEXT_RADIAS = _this.outsideRadius * .8;
+        _this.FONT_STYLE = "bold " + _this.outsideRadius * .07 + "px Helvetica, Arial";
+
+        _this.ARROW_RADIUS = _this.outsideRadius / 3; // 圆盘指针的半径
+        _this.BUTTON_RADIUS = _this.ARROW_RADIUS * .8; // 圆盘内部按钮的半径
+
+        _this.AWARDS_COUNT = _this.awards.length;
+        _this.AWARD_RADIAN = Math.PI * 2 / _this.AWARDS_COUNT;
+
+        _this._isAnimate = false;
+        _this._spinningTime = 0;
+        _this._spinTotalTime;
+        _this._spinningChange;
+
+        _this._canvasStyle;
         return _this;
     }
 
@@ -226,22 +224,22 @@ var RouletteWheel = function (_Global) {
 
                 if (_this2.awards[i].substr(0, 3) === 'los') context.fillStyle = _this2.loseColor;else if (i % 2 === 0) context.fillStyle = _this2.evenColor;else context.fillStyle = _this2.oddColor;
 
-                var _startRadian = _this2.startRadian + _this2.awardRadian * i,
-                    _endRadian = _startRadian + _this2.awardRadian;
+                var _startRadian = _this2.startRadian + _this2.AWARD_RADIAN * i,
+                    _endRadian = _startRadian + _this2.AWARD_RADIAN;
 
                 context.beginPath();
                 context.arc(_this2.centerX, _this2.centerY, _this2.outsideRadius - 5, _startRadian, _endRadian, false);
-                context.arc(_this2.centerX, _this2.centerY, _this2.insideRadius, _endRadian, _startRadian, true);
+                context.arc(_this2.centerX, _this2.centerY, _this2.INSIDE_RADIUS, _endRadian, _startRadian, true);
                 context.fill();
                 context.restore();
 
                 // 绘制图片
                 if (_this2.awards[i].substr(0, 3) === 'img') {
                     var drawImage = function drawImage(self, context) {
-                        var size = Math.sin(self.awardRadian) * self.outsideRadius / 2.5;
+                        var size = Math.sin(self.AWARD_RADIAN) * self.outsideRadius / 2.5;
                         context.save();
-                        context.translate(self.centerX + Math.cos(_startRadian + self.awardRadian / 2) * self.textRadius, self.centerY + Math.sin(_startRadian + self.awardRadian / 2) * self.textRadius);
-                        context.rotate(_startRadian + self.awardRadian / 2 + Math.PI / 2);
+                        context.translate(self.centerX + Math.cos(_startRadian + self.AWARD_RADIAN / 2) * self.TEXT_RADIAS, self.centerY + Math.sin(_startRadian + self.AWARD_RADIAN / 2) * self.TEXT_RADIAS);
+                        context.rotate(_startRadian + self.AWARD_RADIAN / 2 + Math.PI / 2);
                         context.drawImage(image, -size / 2, 0, size, size);
                         context.restore();
                     };
@@ -267,22 +265,22 @@ var RouletteWheel = function (_Global) {
                         var award = _this2.awards[i].substr(0, 3) === 'los' ? '未中奖' : _this2.awards[i];
                         context.save();
                         context.fillStyle = _this2.textColor;
-                        context.font = _this2.font;
-                        context.translate(_this2.centerX + Math.cos(_startRadian + _this2.awardRadian / 2) * _this2.textRadius, _this2.centerY + Math.sin(_startRadian + _this2.awardRadian / 2) * _this2.textRadius);
-                        context.rotate(_startRadian + _this2.awardRadian / 2 + Math.PI / 2);
+                        context.font = _this2.FONT_STYLE;
+                        context.translate(_this2.centerX + Math.cos(_startRadian + _this2.AWARD_RADIAN / 2) * _this2.TEXT_RADIAS, _this2.centerY + Math.sin(_startRadian + _this2.AWARD_RADIAN / 2) * _this2.TEXT_RADIAS);
+                        context.rotate(_startRadian + _this2.AWARD_RADIAN / 2 + Math.PI / 2);
                         context.fillText(award, -context.measureText(award).width / 2, 0);
                         context.restore();
                     }
             };
 
-            for (var i = 0; i < this.awardsCount; i++) {
+            for (var i = 0; i < this.AWARDS_COUNT; i++) {
                 _loop(i);
             }
             // ----------
 
             // ---------- 绘制按钮指针
             var moveX = this.centerX,
-                moveY = this.centerY - this.arrowRadius + 5;
+                moveY = this.centerY - this.ARROW_RADIUS + 5;
 
             context.save();
             context.fillStyle = this.arrowColorFrom;
@@ -307,7 +305,7 @@ var RouletteWheel = function (_Global) {
 
 
             // ---------- 绘制按钮圆盘
-            var gradient_1 = context.createLinearGradient(this.centerX - this.arrowRadius, this.centerY - this.arrowRadius, this.centerX - this.arrowRadius, this.centerY + this.arrowRadius);
+            var gradient_1 = context.createLinearGradient(this.centerX - this.ARROW_RADIUS, this.centerY - this.ARROW_RADIUS, this.centerX - this.ARROW_RADIUS, this.centerY + this.ARROW_RADIUS);
             context.save();
             gradient_1.addColorStop(0, this.arrowColorFrom);
             gradient_1.addColorStop(1, this.arrowColorTo);
@@ -319,19 +317,19 @@ var RouletteWheel = function (_Global) {
             context.shadowBlur = 15;
 
             context.beginPath();
-            context.arc(this.centerX, this.centerY, this.arrowRadius, 0, Math.PI * 2, false);
+            context.arc(this.centerX, this.centerY, this.ARROW_RADIUS, 0, Math.PI * 2, false);
             context.fill();
             context.restore();
             // ---------- 
 
             // ---------- 绘制按钮
-            var gradient_2 = context.createLinearGradient(this.centerX - this.buttonRadius, this.centerY - this.buttonRadius, this.centerX - this.buttonRadius, this.centerY + this.buttonRadius);
+            var gradient_2 = context.createLinearGradient(this.centerX - this.BUTTON_RADIUS, this.centerY - this.BUTTON_RADIUS, this.centerX - this.BUTTON_RADIUS, this.centerY + this.BUTTON_RADIUS);
             context.save();
             gradient_2.addColorStop(0, this.buttonColorFrom);
             gradient_2.addColorStop(1, this.buttonColorTo);
             context.fillStyle = gradient_2;
             context.beginPath();
-            context.arc(this.centerX, this.centerY, this.buttonRadius, 0, Math.PI * 2, false);
+            context.arc(this.centerX, this.centerY, this.BUTTON_RADIUS, 0, Math.PI * 2, false);
             context.fill();
             context.restore();
             // ----------
@@ -339,8 +337,8 @@ var RouletteWheel = function (_Global) {
             // ---------- 绘制按钮文字
             context.save();
             context.fillStyle = this.buttonFontColor;
-            context.font = "bold " + this.buttonRadius / 2 + "px helvetica";
-            _get(RouletteWheel.prototype.__proto__ || Object.getPrototypeOf(RouletteWheel.prototype), "drawText", this).call(this, context, this.buttonFont, this.centerX - this.buttonRadius / 2, this.centerY - this.buttonRadius / 2 - 4, this.buttonRadius * .8, this.buttonRadius / 2 + 4);
+            context.font = "bold " + this.BUTTON_RADIUS / 2 + "px helvetica";
+            _get(RouletteWheel.prototype.__proto__ || Object.getPrototypeOf(RouletteWheel.prototype), "drawText", this).call(this, context, this.buttonFont, this.centerX - this.BUTTON_RADIUS / 2, this.centerY - this.BUTTON_RADIUS / 2 - 4, this.BUTTON_RADIUS * .8, this.BUTTON_RADIUS / 2 + 4);
             context.restore();
             // ----------
         }
@@ -353,17 +351,16 @@ var RouletteWheel = function (_Global) {
          * @param {Obj} context 
          */
         value: function rotateWheel(context) {
-            this.spinningTime += 30;
+            this._spinningTime += 30;
 
-            if (this.spinningTime >= this.spinTotalTime) {
-                this.isAnimate = false;
-                this.achieveAward = this.getValue();
-                this.finish();
+            if (this._spinningTime >= this._spinTotalTime) {
+                this._isAnimate = false;
+                if (this.finish) this.finish(this.getValue());
                 return;
             }
 
-            var _spinningChange = (this.spinningChange - _get(RouletteWheel.prototype.__proto__ || Object.getPrototypeOf(RouletteWheel.prototype), "easeOut", this).call(this, this.spinningTime, 0, this.spinningChange, this.spinTotalTime)) * (Math.PI / 180);
-            this.startRadian += _spinningChange;
+            var __spinningChange = (this._spinningChange - _get(RouletteWheel.prototype.__proto__ || Object.getPrototypeOf(RouletteWheel.prototype), "easeOut", this).call(this, this._spinningTime, 0, this._spinningChange, this._spinTotalTime)) * (Math.PI / 180);
+            this.startRadian += __spinningChange;
 
             this.drawRouletteWheel(context);
             window.requestAnimationFrame(this.rotateWheel.bind(this, context));
@@ -377,10 +374,10 @@ var RouletteWheel = function (_Global) {
          */
         value: function getValue() {
             var degrees = this.startRadian * 180 / Math.PI + 90,
-                arcd = this.awardRadian * 180 / Math.PI,
+                arcd = this.AWARD_RADIAN * 180 / Math.PI,
                 index = Math.floor((360 - degrees % 360) / arcd);
 
-            return { val: this.awards[index], index: index };
+            return index;
         }
     }, {
         key: "spin",
@@ -391,11 +388,11 @@ var RouletteWheel = function (_Global) {
          * @param {Obj} context 
          */
         value: function spin(context) {
-            this.isAnimate = true;
+            this._isAnimate = true;
             this.value = '';
-            this.spinningTime = 0;
-            this.spinTotalTime = Math.random() * 500 + this.duration;
-            this.spinningChange = Math.random() * 100 + this.velocity;
+            this._spinningTime = 0;
+            this._spinTotalTime = Math.random() * 500 + this.duration;
+            this._spinningChange = Math.random() * 100 + this.velocity;
             this.rotateWheel(context);
         }
     }, {
@@ -410,14 +407,15 @@ var RouletteWheel = function (_Global) {
         value: function render(canvas, context) {
             var _this3 = this;
 
+            this._canvasStyle = canvas.getAttribute('style');
             this.drawRouletteWheel(context);
 
             ['touchstart', 'mousedown'].forEach(function (event) {
                 canvas.addEventListener(event, function (e) {
-                    if (!_this3.isAnimate) {
+                    if (!_this3._isAnimate) {
                         var loc = _get(RouletteWheel.prototype.__proto__ || Object.getPrototypeOf(RouletteWheel.prototype), "windowToCanvas", _this3).call(_this3, canvas, e);
                         context.beginPath();
-                        context.arc(_this3.centerX, _this3.centerY, _this3.buttonRadius, 0, Math.PI * 2, false);
+                        context.arc(_this3.centerX, _this3.centerY, _this3.BUTTON_RADIUS, 0, Math.PI * 2, false);
                         if (context.isPointInPath(loc.x, loc.y)) {
                             _this3.spin(context);
                         }
@@ -428,11 +426,11 @@ var RouletteWheel = function (_Global) {
             canvas.addEventListener('mousemove', function (e) {
                 var loc = _get(RouletteWheel.prototype.__proto__ || Object.getPrototypeOf(RouletteWheel.prototype), "windowToCanvas", _this3).call(_this3, canvas, e);
                 context.beginPath();
-                context.arc(_this3.centerX, _this3.centerY, _this3.buttonRadius, 0, Math.PI * 2, false);
+                context.arc(_this3.centerX, _this3.centerY, _this3.BUTTON_RADIUS, 0, Math.PI * 2, false);
                 if (context.isPointInPath(loc.x, loc.y)) {
-                    canvas.setAttribute('style', 'cursor: pointer');
+                    canvas.setAttribute('style', "cursor: pointer;" + _this3._canvasStyle);
                 } else {
-                    canvas.setAttribute('style', '');
+                    canvas.setAttribute('style', _this3._canvasStyle);
                 }
             });
         }
@@ -440,16 +438,6 @@ var RouletteWheel = function (_Global) {
 
     return RouletteWheel;
 }(Global);
-
-/**
- * 刮刮卡
- * 可配置参数
- * @param {Str} style                 可选，传入一个 css 字符串，设置刮刮卡的样式
- * @param {Str} awardBackgroundImage  必选，传入一个图片路径，设置刮刮卡的奖品类型
- * @param {Num} eraserSize            可选，默认15px，橡皮擦的半径大小
- * @param {Str} coverColor            可选，默认 #b5b5b5，涂层的颜色
- */
-
 
 var ScratchCard = function (_Global2) {
     _inherits(ScratchCard, _Global2);
@@ -459,13 +447,13 @@ var ScratchCard = function (_Global2) {
 
         var _this4 = _possibleConstructorReturn(this, (ScratchCard.__proto__ || Object.getPrototypeOf(ScratchCard)).call(this));
 
-        _this4.dragging = false;
-
         _this4.style = options.style;
         _this4.awardBackgroundImage = options.awardBackgroundImage;
 
         _this4.eraserSize = options.eraserSize || 15;
         _this4.coverColor = options.coverColor || '#b5b5b5';
+
+        _this4._dragging = false;
         return _this4;
     }
 
@@ -518,7 +506,7 @@ var ScratchCard = function (_Global2) {
             ['touchstart', 'mousedown'].forEach(function (event) {
                 canvas.addEventListener(event, function (e) {
                     var loc = _get(ScratchCard.prototype.__proto__ || Object.getPrototypeOf(ScratchCard.prototype), "windowToCanvas", _this5).call(_this5, canvas, e);
-                    _this5.dragging = true;
+                    _this5._dragging = true;
                     _this5.drawEraser(context, loc);
                 });
             });
@@ -526,7 +514,7 @@ var ScratchCard = function (_Global2) {
             ['touchmove', 'mousemove'].forEach(function (event) {
                 canvas.addEventListener(event, function (e) {
                     var loc = void 0;
-                    if (_this5.dragging) {
+                    if (_this5._dragging) {
                         loc = _get(ScratchCard.prototype.__proto__ || Object.getPrototypeOf(ScratchCard.prototype), "windowToCanvas", _this5).call(_this5, canvas, e);
                         _this5.drawEraser(context, loc);
                     }
@@ -535,11 +523,275 @@ var ScratchCard = function (_Global2) {
 
             ['touchend', 'mouseup'].forEach(function (event) {
                 canvas.addEventListener(event, function (e) {
-                    _this5.dragging = false;
+                    _this5._dragging = false;
                 });
             });
         }
     }]);
 
     return ScratchCard;
+}(Global);
+
+var Sudoku = function (_Global3) {
+    _inherits(Sudoku, _Global3);
+
+    function Sudoku(options) {
+        _classCallCheck(this, Sudoku);
+
+        var _this6 = _possibleConstructorReturn(this, (Sudoku.__proto__ || Object.getPrototypeOf(Sudoku)).call(this));
+
+        _this6.awardsRowLen = options.awardsRowLen || 3;
+        _this6.awards = options.awards;
+        _this6.sudokuSize = options.sudokuSize;
+        _this6.sudokuItemRadius = options.sudokuItemRadius || 8;
+
+        _this6.sudokuItemUnactiveColor = options.sudokuItemUnactiveColor || 'rgb(255, 235, 236)';
+        _this6.sudokuItemUnactiveTxtColor = options.sudokuItemUnactiveTxtColor || 'rgb(48, 44, 43)';
+        _this6.sudokuItemUnactiveShadowColor = options.sudokuItemUnactiveShadowColor || 'rgb(255, 193, 200)';
+
+        _this6.sudokuItemActiveColor = options.sudokuItemActiveColor || 'rgb(254, 150, 51)';
+        _this6.sudokuItemActiveTxtColor = options.sudokuItemActiveTxtColor || 'rgb(255, 255, 255)';
+        _this6.sudokuItemActiveShadowColor = options.sudokuItemActiveShadowColor || 'rgb(255, 193, 200)';
+
+        _this6.buttonColor = options.buttonColor || 'rgb(255, 216, 1)';
+        _this6.buttonTxtColor = options.buttonTxtColor || 'rgb(172, 97, 1)';
+        _this6.buttonShadowColor = options.buttonShadowColor || 'rgb(253, 177, 1)';
+
+        _this6.duration = options.duration || 4000;
+        _this6.velocity = options.velocity || 300;
+
+        _this6.finish = options.finish;
+
+        _this6.AWARDS_STEP = _this6.awardsRowLen - 1;
+        _this6.AWARDS_LEN = _this6.AWARDS_STEP * 4;
+
+        _this6.LETF_TOP_POINT = 0;
+        _this6.RIGHT_TOP_POINT = _this6.AWARDS_STEP;
+        _this6.RIGHT_BOTTOM_POINT = _this6.AWARDS_STEP * 2;
+        _this6.LEFT_BOTTOM_POINT = _this6.AWARDS_STEP * 2 + _this6.AWARDS_STEP;
+
+        _this6.SUDOKU_ITEM_MARGIN = _this6.sudokuSize / _this6.awardsRowLen / 6;
+        _this6.SUDOKU_ITEM_SIZE = _this6.sudokuSize / _this6.awardsRowLen - _this6.SUDOKU_ITEM_MARGIN;
+        _this6.SUDOKU_ITEM_TXT_SIZE = "bold " + _this6.SUDOKU_ITEM_SIZE * .12 + "px Helvetica";
+
+        _this6.BUTTON_SIZE = _this6.sudokuSize - (_this6.SUDOKU_ITEM_SIZE * 2 + _this6.SUDOKU_ITEM_MARGIN * 3);
+        _this6.BUTTON_TXT_SIZE = "bold " + _this6.BUTTON_SIZE * .12 + "px Helvetica";
+
+        _this6._positions = [];
+        _this6._buttonPosition = [];
+
+        _this6._isAnimate = false;
+        _this6._jumpIndex = Math.floor(Math.random() * _this6.AWARDS_LEN);
+        _this6._jumpingTime = 0;
+        _this6._jumpTotalTime;
+        _this6._jumpChange;
+
+        _this6._canvasStyle;
+
+        return _this6;
+    }
+
+    _createClass(Sudoku, [{
+        key: "drawSudoku",
+        value: function drawSudoku(context) {
+            context.clearRect(0, 0, canvas.width, canvas.height);
+
+            // 顶点坐标
+            var maxPosition = this.AWARDS_STEP * this.SUDOKU_ITEM_SIZE + this.AWARDS_STEP * this.SUDOKU_ITEM_MARGIN;
+
+            for (var i = 0; i < this.AWARDS_LEN; i++) {
+                // ----- 左上顶点
+                if (i >= this.LETF_TOP_POINT && i < this.RIGHT_TOP_POINT) {
+                    var row = i,
+                        x = row * this.SUDOKU_ITEM_SIZE + row * this.SUDOKU_ITEM_MARGIN,
+                        y = 0;
+
+                    this._positions.push({ x: x, y: y });
+
+                    this.drawSudokuItem(context, x, y, this.SUDOKU_ITEM_SIZE, this.sudokuItemRadius, this.awards[i], this.SUDOKU_ITEM_TXT_SIZE, this.sudokuItemUnactiveTxtColor, this.sudokuItemUnactiveColor, this.sudokuItemUnactiveShadowColor);
+                }
+                // -----
+
+                // ----- 右上顶点
+                if (i >= this.RIGHT_TOP_POINT && i < this.RIGHT_BOTTOM_POINT) {
+                    var _row = Math.abs(this.AWARDS_STEP - i),
+                        _x2 = maxPosition,
+                        _y = _row * this.SUDOKU_ITEM_SIZE + _row * this.SUDOKU_ITEM_MARGIN;
+
+                    this._positions.push({ x: _x2, y: _y });
+
+                    this.drawSudokuItem(context, _x2, _y, this.SUDOKU_ITEM_SIZE, this.sudokuItemRadius, this.awards[i], this.SUDOKU_ITEM_TXT_SIZE, this.sudokuItemUnactiveTxtColor, this.sudokuItemUnactiveColor, this.sudokuItemUnactiveShadowColor);
+                }
+                // -----
+
+                // ----- 左下顶点
+                if (i >= this.RIGHT_BOTTOM_POINT && i < this.LEFT_BOTTOM_POINT) {
+                    var _row2 = Math.abs(this.AWARDS_STEP * 2 - i),
+                        reverseRow = Math.abs(_row2 - this.AWARDS_STEP),
+                        _x3 = reverseRow * this.SUDOKU_ITEM_SIZE + reverseRow * this.SUDOKU_ITEM_MARGIN,
+                        _y2 = maxPosition;
+
+                    this._positions.push({ x: _x3, y: _y2 });
+
+                    this.drawSudokuItem(context, _x3, _y2, this.SUDOKU_ITEM_SIZE, this.sudokuItemRadius, this.awards[i], this.SUDOKU_ITEM_TXT_SIZE, this.sudokuItemUnactiveTxtColor, this.sudokuItemUnactiveColor, this.sudokuItemUnactiveShadowColor);
+                }
+                // -----
+
+                // ----- 左上顶点
+                if (i >= this.LEFT_BOTTOM_POINT) {
+                    var _row3 = Math.abs(this.AWARDS_STEP * 3 - i),
+                        _reverseRow = Math.abs(_row3 - this.AWARDS_STEP),
+                        _x4 = 0,
+                        _y3 = _reverseRow * this.SUDOKU_ITEM_SIZE + _reverseRow * this.SUDOKU_ITEM_MARGIN;
+
+                    this._positions.push({ x: _x4, y: _y3 });
+
+                    this.drawSudokuItem(context, _x4, _y3, this.SUDOKU_ITEM_SIZE, this.sudokuItemRadius, this.awards[i], this.SUDOKU_ITEM_TXT_SIZE, this.sudokuItemUnactiveTxtColor, this.sudokuItemUnactiveColor, this.sudokuItemUnactiveShadowColor);
+                }
+            };
+
+            this.drawButton(context);
+        }
+    }, {
+        key: "drawSudokuItem",
+        value: function drawSudokuItem(context, x, y, size, radius, text, txtSize, txtColor, bgColor, shadowColor) {
+            // ----- 绘制方块
+            context.save();
+            context.fillStyle = bgColor;
+            context.shadowOffsetX = 0;
+            context.shadowOffsetY = 4;
+            context.shadowBlur = 0;
+            context.shadowColor = shadowColor;
+            context.beginPath();
+            _get(Sudoku.prototype.__proto__ || Object.getPrototypeOf(Sudoku.prototype), "roundedRect", this).call(this, context, x, y, size, size, radius);
+            context.fill();
+            context.restore();
+            // -----
+
+            // ----- 绘制图片与文字
+            if (text) {
+                if (text.substr(0, 3) === 'img') {
+                    var drawImage = function drawImage() {
+                        context.drawImage(image, x + size * .2 / 2, y + size * .2 / 2, size * .8, size * .8);
+                    };
+
+                    var textFormat = text.replace('img-', ''),
+                        image = new Image();
+                    image.src = textFormat;
+
+                    ;
+
+                    if (!image.complete) {
+                        image.onload = function (e) {
+                            drawImage();
+                        };
+                    } else {
+                        drawImage();
+                    }
+                } else {
+                    context.save();
+                    context.fillStyle = txtColor;
+                    context.font = txtSize;
+                    context.translate(x + this.SUDOKU_ITEM_SIZE / 2 - context.measureText(text).width / 2, y + this.SUDOKU_ITEM_SIZE / 2 + 6);
+                    context.fillText(text, 0, 0);
+                    context.restore();
+                }
+            }
+            // -----
+        }
+    }, {
+        key: "drawButton",
+        value: function drawButton(context) {
+            var x = this.SUDOKU_ITEM_SIZE + this.SUDOKU_ITEM_MARGIN,
+                y = this.SUDOKU_ITEM_SIZE + this.SUDOKU_ITEM_MARGIN;
+
+            // ----- 绘制背景
+            context.save();
+            context.fillStyle = this.buttonColor;
+            context.shadowOffsetX = 0;
+            context.shadowOffsetY = 4;
+            context.shadowBlur = 0;
+            context.shadowColor = this.buttonShadowColor;
+            context.beginPath();
+            _get(Sudoku.prototype.__proto__ || Object.getPrototypeOf(Sudoku.prototype), "roundedRect", this).call(this, context, x, y, this.BUTTON_SIZE, this.BUTTON_SIZE, this.sudokuItemRadius, this.buttonColor, this.buttonShadowColor);
+            context.fill();
+            context.restore();
+            // -----
+
+            // ----- 绘制文字
+            context.save();
+            context.fillStyle = this.buttonTxtColor;
+            context.font = this.BUTTON_TXT_SIZE;
+            context.translate(x + this.BUTTON_SIZE / 2 - context.measureText('立即抽奖').width / 2, y + this.BUTTON_SIZE / 2 + 10);
+            context.fillText('立即抽奖', 0, 0);
+            context.restore();
+            // -----
+
+            this._buttonPosition = { x: x, y: y };
+        }
+    }, {
+        key: "createButtonPath",
+        value: function createButtonPath(context) {
+            context.beginPath();
+            _get(Sudoku.prototype.__proto__ || Object.getPrototypeOf(Sudoku.prototype), "roundedRect", this).call(this, context, this._buttonPosition.x, this._buttonPosition.y, this.BUTTON_SIZE, this.BUTTON_SIZE, this.sudokuItemRadius);
+        }
+    }, {
+        key: "animate",
+        value: function animate(context) {
+            this.isAnimate = true;
+
+            if (this._jumpIndex < this.AWARDS_LEN - 1) this._jumpIndex++;else if (this._jumpIndex >= this.AWARDS_LEN - 1) this._jumpIndex = 0;
+
+            this._jumpingTime += 100;
+
+            if (this._jumpingTime >= this._jumpTotalTime) {
+                this.isAnimate = false;
+                if (this.finish) {
+                    if (this._jumpIndex != 0) this.finish(this._jumpIndex - 1);else if (this._jumpIndex === 0) this.finish(this.AWARDS_LEN - 1);
+                }
+                return;
+            };
+
+            this.drawSudoku(context);
+            this.drawSudokuItem(context, this._positions[this._jumpIndex].x, this._positions[this._jumpIndex].y, this.SUDOKU_ITEM_SIZE, this.sudokuItemRadius, this.awards[this._jumpIndex], this.SUDOKU_ITEM_TXT_SIZE, this.sudokuItemActiveTxtColor, this.sudokuItemActiveColor, this.sudokuItemActiveShadowColor);
+
+            setTimeout(this.animate.bind(this, context), 50 + _get(Sudoku.prototype.__proto__ || Object.getPrototypeOf(Sudoku.prototype), "easeOut", this).call(this, this._jumpingTime, 0, this._jumpChange, this._jumpTotalTime));
+        }
+    }, {
+        key: "render",
+        value: function render(canvas, context) {
+            var _this7 = this;
+
+            this._canvasStyle = canvas.getAttribute('style');
+            this.drawSudoku(context);
+
+            ['mousedown', 'touchstart'].forEach(function (event) {
+                canvas.addEventListener(event, function (e) {
+                    var loc = _get(Sudoku.prototype.__proto__ || Object.getPrototypeOf(Sudoku.prototype), "windowToCanvas", _this7).call(_this7, canvas, e);
+
+                    _this7.createButtonPath(context);
+
+                    if (context.isPointInPath(loc.x, loc.y) && !_this7.isAnimate) {
+                        _this7._jumpingTime = 0;
+                        _this7._jumpTotalTime = Math.random() * 1000 + _this7.duration;
+                        _this7._jumpChange = Math.random() * 3 + _this7.velocity;
+                        _this7.animate(context);
+                    }
+                });
+            });
+
+            canvas.addEventListener('mousemove', function (e) {
+                var loc2 = _get(Sudoku.prototype.__proto__ || Object.getPrototypeOf(Sudoku.prototype), "windowToCanvas", _this7).call(_this7, canvas, e);
+                _this7.createButtonPath(context);
+
+                if (context.isPointInPath(loc2.x, loc2.y)) {
+                    canvas.setAttribute('style', "cursor: pointer;" + _this7._canvasStyle);
+                } else {
+                    canvas.setAttribute('style', _this7._canvasStyle);
+                }
+            });
+        }
+    }]);
+
+    return Sudoku;
 }(Global);
