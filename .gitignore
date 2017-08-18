@@ -1,5 +1,4 @@
 .DS_Store
-gulpfile.js
 package.json
 node_modules/
 npm-debug.log*
