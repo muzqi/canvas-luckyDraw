@@ -1,3 +1,19 @@
+## 更新日志：
+> v0.01
+
+* 首次提交
+
+<br>
+
+> v0.02
+
+* 大转盘与九宫格 `awards` 奖品数组结构，由字符串，修改为对象；该对象包含两个属性，`type` 和 `content`，使用 `type` 属性来决定奖项是否为文字，或者图片。更加灵活，并且清晰；
+
+* 九宫格去除可配置属性 `awardsRowLen`，而是以 `awards` 属性的长度，来决定每行每列显示几个奖项。
+
+
+<br>
+
 ## 引入：
 > [下载](https://github.com/Musiky/canvas-luckyDraw/blob/master/src/dist/luckyDraw.min.js) `luckyDraw.min.js` 并引入。不依赖任何第三方库
 
@@ -23,16 +39,31 @@
 
     new Sudoku({
         sudokuSize: canvas.width,
-        awardsRowLen: 3,
 
         awards: [
-            '30元话费', 'iphone8', '未中奖', 
-            'Macbook pro', '洗衣粉一袋', '火星一日游',
-            'img-http://tse2.mm.bing.net/th?id=OIP.lnWeNzoVmFXNZXe4bXh7lQDHEs&w=193&h=291&c=7&qlt=90&o=4&dpr=2&pid=1.7'
+            {type: 'text', content: '30元话费'},
+            {type: 'text', content: 'iphone8'},
+            {type: 'losing', content: '未中奖'},
+            {type: 'text', content: 'MackBook Pro'},
+            {type: 'image', content: 'https://img12.360buyimg.com/n7/jfs/t4807/209/1436278963/496606/8e486549/58f0884eNcec87657.jpg'},
+            {type: 'losing', content: '未中奖'},
+            {type: 'image', content: 'https://img11.360buyimg.com/n7/jfs/t3187/325/423764794/213696/f4eb1dbd/57b68142Nbe104228.jpg'},
+            {type: 'text', content: '火星一日游'}
         ],
         
         finish: function (index) {
-            alert('🎉恭喜您中得：' + this.awards[index])
+            switch(this.awards[index].type) {
+                case 'text':
+                    alert('🎉恭喜您中得：' + this.awards[index].content);
+                    break;
+                case 'image':
+                    if (index === 4)      alert('🎉恭喜您中得战争磨坊水冷机');
+                    else if (index === 6) alert('🎉恭喜您中得魔声耳机');
+                    break;
+                case 'losing':
+                    alert('💔很遗憾，您没有中奖~');
+                    break;
+            }
         }
 
     }).render(canvas, context);
@@ -42,35 +73,25 @@
 <br>
 
 **可配置参数：**
-``` javascript
-new Sudoku({
-    sudokusize: canvas.width,                   // 必选，九宫格的尺寸，一般为 canvas 的尺寸
-    awardsRowLen: 3,                            // 必选，每行每列显示奖项数量
-    awards: [                                   // 必选，奖品，若要显示图片，则以 'img-imageurl' 格式输入
-        '30元话费', 'img-imageurl', ...
-    ],
 
-    sudokuItemRadius: 8,                        // 可选，奖项小方块的圆角大小
-    sudokuItemUnactiveColor: 'red',             // 可选，奖项方块的颜色
-    sudokuItemUnactiveTxtColor: 'white',        // 可选，奖项方块文字的颜色
-    sudokuItemUnactiveShadowColor: 'black'      // 可选，奖项方块阴影的颜色
+| 属性 | 是否必选 | 类型 | 备注 | 默认值 |
+| :-- | :--: | :-- | :-- | :--: |
+| sudokusize | 是 | *Number* | 九宫格的尺寸，一般为 canvas 的尺寸 | ø |
+| awards     | 是 | *Object* | 奖品信息，每组对象代表一个奖项，对象中有两个属性，type 和 content；<br>type 有三个可能的值：<br><br>`text：`将 content 中的值输出为普通文本；<br> `losing：`将 content 中的值输出普通文本，状态为未中奖；<br>`image：`将 content 中的图片地址渲染为图片。 | ø |
+| sudokuItemRadius | 否 | *Number* | 奖项小方块的圆角大小 | 8 |
+| sudokuItemUnactiveColor | 否 | *String* | 奖项方块的颜色 | rgb(255, 235, 236) |
+| sudokuItemUnactiveTxtColor | 否 | *String* | 奖项方块文字的颜色 | rgb(48, 44, 43) |
+| sudokuItemUnactiveShadowColor | 否 | *String* | 奖项方块阴影的颜色 | rgb(255, 193, 200) |
+| sudokuItemActiveColor | 否 | *String* | 跳动方块的颜色 | rgb(254, 150, 51) |
+| sudokuItemActiveTxtColor | 否 | *String* | 跳动方块文字的颜色 | rgb(255, 255, 255) |
+| sudokuItemActiveShadowColor | 否 | *String* | 跳动方块阴影的颜色 | rgb(255, 193, 200) |
+| buttonColor | 否 | *String* | 按钮的颜色 | rgb(255, 216, 1) |
+| buttonTxtColor | 否 | *String* | 按钮文字的颜色 | rgb(172, 97, 1) |
+| buttonShadowColor | 否 | *String* | 按钮阴影的颜色 | rgb(253, 177, 1) |
+| duration | 否 | *Number* | 动画时长 | 4000 |
+| velocity | 否 | *Number* | 动画速率变化值（峰值） | 300 |
+| finish | 否 | *Callback* | 获取奖品信息后的回调，返回一个下标，根据该下标查找抽到什么奖品 | ø
 
-    sudokuItemActiveColor: 'yellow',            // 可选，跳动方块的颜色
-    sudokuItemActiveTxtColor: 'black',          // 可选，跳动方块文字的颜色
-    sudokuItemActiveShadowColor: 'black'        // 可选，跳动方块阴影的颜色
-
-    buttonColor: 'rgb(2, 168, 2)',              // 可选，按钮的颜色
-    buttonTxtColor: '#333',                     // 可选，按钮文字的颜色
-    buttonShadowColor: 'blue',                  // 可选，按钮阴影的颜色
-
-    duration: 4000,                             // 可选，默认4000；动画时长
-    velocity: 300,                              // 可选，默认300；动画速率变化值（峰值）
-
-    finish: function (index) {                  // 可选，获取奖品信息后的回调，返回一个下标，根据该下标查找抽到什么奖品
-        alert(this.awards[index])
-    }
-})
-```
 
 <br>
 
@@ -97,13 +118,25 @@ new Sudoku({
         outsideRadius: 200,
 
         awards: [
-            'iphone 8', 'MacBook Pro',
-            '20元停车券', '大保健', '10元话费',
-            'los-未中奖', 'img-http://tse2.mm.bing.net/th?id=OIP.lnWeNzoVmFXNZXe4bXh7lQDHEs&w=193&h=291&c=7&qlt=90&o=4&dpr=2&pid=1.7'
+            {type: 'text', content: 'iphone8'},
+            {type: 'text', content: '大保健'},
+            {type: 'text', content: '10元话费'},
+            {type: 'image', content: 'https://img12.360buyimg.com/n7/jfs/t4807/209/1436278963/496606/8e486549/58f0884eNcec87657.jpg'},
+            {type: 'losing', content: '未中奖'}
         ],
 
         finish: function (index) {
-            alert('🎉恭喜您中得：' + this.awards[index])
+            switch(this.awards[index].type) {
+                case 'text':
+                    alert('🎉恭喜您中得：' + this.awards[index].content);
+                    break;
+                case 'image':
+                    alert('🎉恭喜您中得：战争磨坊水冷机箱');
+                    break;
+                case 'losing':
+                    alert('💔很遗憾，您没有中奖~');
+                    break;
+            }
         }
         
     }).render(canvas, context);
@@ -114,40 +147,27 @@ new Sudoku({
 <br>
 
 **可配置参数：**
-``` javascript
-new RouletteWheel({
-    centerX: canvas.width / 2,              // 必选，大转盘圆心x轴坐标，一般为画布宽度的一半
-    centerY: canvas.height / 2,             // 必选，大转盘圆心y轴坐标，一般为画布高度的一半
-    outsideRadius: 250,                     // 必选，大转盘的半径
-    
-    awards: [                               // 必选，大转盘的奖品项。
-                                            // 如果为图片，以 'img-imageurl' 格式输入;
-                                            // 如果为未中奖项，以 'los-text' 格式输入
-        '话费30元', 'img-imageurl', 'los-text'
-    ],
-    
-    evenColor: 'red',                       // 可选，大转盘第偶数个奖品盘颜色
-    oddColor: 'yellow',                     // 可选，大转盘第奇数个奖品盘颜色
-    loseColor: 'gray',                      // 可选，大转盘未中奖表盘颜色
-    textColor: 'white',                     // 可选，大转盘奖品文字颜色
-    
-    arrowColorFrom: 'gray',                 // 可选，指针渐变色的第一个颜色
-    arrowColorTo: 'darkgray',               // 可选，指针渐变色的第二个颜色
-    
-    buttonFont: '开始抽奖',                  // 可选，抽奖按钮的文字，默认为 ‘开始抽奖’
-    buttonFontColor: 'grown',               // 可选，抽奖按钮文字的颜色
-    buttonColorFrom: 'yellow',              // 可选，抽奖按钮渐变色的第一个颜色
-    buttonColorTo: 'orange',                // 可选，抽奖按钮渐变色的第二个颜色
-    
-    startRadian: 0,                         // 可选，大转盘绘制的起始角度，默认0
-    duration: 4000,                         // 可选，大转盘旋转的时间，默认 4000ms
-    velocity: 10,                           // 可选，大转盘旋转的速率峰值，默认 10
-    
-    finish: function (index) {              // 可选，获取奖品信息后的回调，返回一个下标，根据该下标查找抽到什么奖品
-        alert(awards[index])
-    }
-})
-```
+
+| 属性 | 是否必选 | 类型 | 备注 | 默认值 |
+| :-- | :--: | :-- | :-- | :--: |
+| centerX | 是 | *Number* | 大转盘圆心x轴坐标，一般为画布宽度的一半 | ø |
+| centerY | 是 | *Number* | 大转盘圆心y轴坐标，一般为画布高度的一半 | ø |
+| outsideRadius | 是 | *Number* | 大转盘的半径，这个值乘以二不能大于 canvas 画布的宽或者高哟！ | ø |
+| awards | 是 | *Object* | 奖品信息，每组对象代表一个奖项，对象中有两个属性，type 和 content；<br>type 有三个可能的值：<br><br>`text：`将 content 中的值输出为普通文本；<br> `losing：`将 content 中的值输出普通文本，状态为未中奖；<br>`image：`将 content 中的图片地址渲染为图片。| ø |
+| evenColor | 否 | *String* | 大转盘第偶数个奖品盘颜色 | #FF6766 |
+| oddColor | 否 | *String* | 大转盘第奇数个奖品盘颜色 | #FD5757 |
+| loseColor | 否 | *String* | 大转盘未中奖表盘颜色 | #F79494 |
+| textColor | 否 | *String* | 大转盘奖品文字颜色 | White |
+| arrowColorFrom | 否 | *String* | 指针渐变色的第一个颜色 | #FFFC95 |
+| arrowColorTo | 否 | *String* | 指针渐变色的第二个颜色 | #FF9D37 |
+| buttonFont | 否 | *String* | 抽奖按钮的文字 | 开始抽奖 |
+| buttonFontColor | 否 | *String* | 抽奖按钮文字的颜色 | #88411F |
+| buttonColorFrom | 否 | *String* | 抽奖按钮渐变色的第一个颜色 | #FDC964 |
+| buttonColorTo | 否 | *String* | 抽奖按钮渐变色的第二个颜色 | #FFCB65 |
+| startRadian | 否 | *Number* | 大转盘绘制的起始角度 | 0 |
+| duration | 否 | *Number* | 大转盘旋转的时间 | 4000 |
+| velocity | 否 | *Number* | 大转盘旋转的速率峰值 | 10 |
+| finish | 否 | *Callback* | 获取奖品信息后的回调，返回一个下标，根据该下标查找抽到什么奖品 | ø |
 
 <br>
 
@@ -177,13 +197,10 @@ new RouletteWheel({
 <br>
 
 **可配置参数：**
-``` javascript
-new ScratchCard({
-    awardBackgroundImage: 'https://imageurl',   // 必选，canvas 的背景图片，刮开涂层后的奖项
 
-    style: 'margin-top: 100px',                 // 可选，控制 canvas 的样式
-    eraserSize: 20,                             // 可选，默认 15；控制橡皮擦的半径大小
-    coverColor: '#333',                         // 可选，默认 '#b5b5b5'；控制表面涂层的颜色
-})
-```
-
+| 属性 | 是否必选 | 类型 | 备注 | 默认值 |
+| :-- | :--: | :-- | :-- | :--: |
+| awardBackgroundImage | 是 | *String* | canvas 的背景图片，刮开涂层后的奖项 | ø |
+| style | 否 | *String* | 控制 canvas 的样式 | ø |
+| eraserSize | 否 | *String* | 控制橡皮擦的半径大小，单位 px | 15 |
+| coverColor | 否 | *String* | 控制表面涂层的颜色 | #B5B5B5 |
