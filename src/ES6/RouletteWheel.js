@@ -74,7 +74,7 @@ class RouletteWheel extends Global {
             // 绘制色块
             context.save();
 
-            if (this.awards[i].substr(0, 3) === 'los') context.fillStyle = this.loseColor;
+            if (this.awards[i].type === 'losing') context.fillStyle = this.loseColor;
             else if (i % 2 === 0) context.fillStyle = this.evenColor;
             else                  context.fillStyle = this.oddColor;
 
@@ -88,10 +88,10 @@ class RouletteWheel extends Global {
             context.restore();
 
             // 绘制图片
-            if (this.awards[i].substr(0, 3) === 'img') {
+            if (this.awards[i].type === 'image') {
                 let self = this,                    
                     image = new Image();
-                    image.src = this.awards[i].replace('img-', '');
+                    image.src = this.awards[i].content;
 
                 function drawImage(self, context) {
                     let size = Math.sin(self.AWARD_RADIAN) * self.outsideRadius / 2.5;
@@ -121,8 +121,8 @@ class RouletteWheel extends Global {
 
             } 
             // 绘制文字
-            else {
-                let award = this.awards[i].substr(0, 3) === 'los'?'未中奖':this.awards[i];
+            else if (this.awards[i].type === 'text' || this.awards[i].type === 'losing') {
+                let award = this.awards[i].content;
                 context.save();
                 context.fillStyle = this.textColor;
                 context.font = this.FONT_STYLE;
@@ -254,7 +254,7 @@ class RouletteWheel extends Global {
         this._isAnimate = true;
         this.value = '';
         this._spinningTime = 0;
-        this._spinTotalTime = Math.random() * 500 + this.duration;
+        this._spinTotalTime = Math.random() * 1000 + this.duration;
         this._spinningChange = Math.random() * 100 + this.velocity;
         this.rotateWheel(context);
     };

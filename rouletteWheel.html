@@ -29,13 +29,25 @@
         outsideRadius: 200,
 
         awards: [
-            'iphone 8', 'MacBook Pro',
-            '20元停车券', '大保健', '10元话费',
-            'los-未中奖', 'img-http://tse2.mm.bing.net/th?id=OIP.lnWeNzoVmFXNZXe4bXh7lQDHEs&w=193&h=291&c=7&qlt=90&o=4&dpr=2&pid=1.7'
+            {type: 'text', content: 'iphone8'},
+            {type: 'text', content: '大保健'},
+            {type: 'text', content: '10元话费'},
+            {type: 'image', content: 'https://img12.360buyimg.com/n7/jfs/t4807/209/1436278963/496606/8e486549/58f0884eNcec87657.jpg'},
+            {type: 'losing', content: '未中奖'}
         ],
 
         finish: function (index) {
-            alert('🎉恭喜您中得：' + this.awards[index])
+            switch(this.awards[index].type) {
+                case 'text':
+                    alert('🎉恭喜您中得：' + this.awards[index].content);
+                    break;
+                case 'image':
+                    alert('🎉恭喜您中得：战争磨坊水冷机箱');
+                    break;
+                case 'losing':
+                    alert('💔很遗憾，您没有中奖~');
+                    break;
+            }
         }
         
     }).render(canvas, context);
