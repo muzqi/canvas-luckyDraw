@@ -72,7 +72,7 @@ class Sudoku extends Global {
                     x, y,
                     this.SUDOKU_ITEM_SIZE,
                     this.sudokuItemRadius,
-                    this.awards[i],
+                    this.awards[i].type, this.awards[i].content,
                     this.SUDOKU_ITEM_TXT_SIZE,
                     this.sudokuItemUnactiveTxtColor,
                     this.sudokuItemUnactiveColor,
@@ -94,7 +94,7 @@ class Sudoku extends Global {
                     x, y,
                     this.SUDOKU_ITEM_SIZE,
                     this.sudokuItemRadius,
-                    this.awards[i],
+                    this.awards[i].type, this.awards[i].content,
                     this.SUDOKU_ITEM_TXT_SIZE,
                     this.sudokuItemUnactiveTxtColor,
                     this.sudokuItemUnactiveColor,
@@ -117,7 +117,7 @@ class Sudoku extends Global {
                     x, y,
                     this.SUDOKU_ITEM_SIZE,
                     this.sudokuItemRadius,
-                    this.awards[i],
+                    this.awards[i].type, this.awards[i].content,
                     this.SUDOKU_ITEM_TXT_SIZE,
                     this.sudokuItemUnactiveTxtColor,
                     this.sudokuItemUnactiveColor,
@@ -140,7 +140,7 @@ class Sudoku extends Global {
                     x, y,
                     this.SUDOKU_ITEM_SIZE,
                     this.sudokuItemRadius,
-                    this.awards[i],
+                    this.awards[i].type, this.awards[i].content,
                     this.SUDOKU_ITEM_TXT_SIZE,
                     this.sudokuItemUnactiveTxtColor,
                     this.sudokuItemUnactiveColor,
@@ -152,7 +152,7 @@ class Sudoku extends Global {
         this.drawButton(context);
     };
 
-    drawSudokuItem(context, x, y, size, radius, text, txtSize, txtColor, bgColor, shadowColor) {
+    drawSudokuItem(context, x, y, size, radius, type, content, txtSize, txtColor, bgColor, shadowColor) {
         // ----- 绘制方块
         context.save();
         context.fillStyle = bgColor;
@@ -172,11 +172,10 @@ class Sudoku extends Global {
         // -----
 
         // ----- 绘制图片与文字
-        if (text) {
-            if (text.substr(0, 3) === 'img') {
-                let textFormat = text.replace('img-', ''),
-                    image = new Image();
-                    image.src = textFormat;
+        if (content) {
+            if (type === 'image') {
+                let image = new Image();
+                    image.src = content;
 
                 function drawImage() {
                     context.drawImage(
@@ -194,15 +193,15 @@ class Sudoku extends Global {
                     drawImage();
                 }
             }
-            else {
+            else if (type === 'text' || type === 'losing') {
                 context.save();
                 context.fillStyle = txtColor;
                 context.font = txtSize;
                 context.translate(
-                    x + this.SUDOKU_ITEM_SIZE / 2 - context.measureText(text).width / 2,
+                    x + this.SUDOKU_ITEM_SIZE / 2 - context.measureText(content).width / 2,
                     y + this.SUDOKU_ITEM_SIZE / 2 + 6
                 );
-                context.fillText(text, 0, 0);
+                context.fillText(content, 0, 0);
                 context.restore();
             }
         }
@@ -279,7 +278,8 @@ class Sudoku extends Global {
             context,
             this._positions[this._jumpIndex].x, this._positions[this._jumpIndex].y,
             this.SUDOKU_ITEM_SIZE, this.sudokuItemRadius, 
-            this.awards[this._jumpIndex], this.SUDOKU_ITEM_TXT_SIZE, this.sudokuItemActiveTxtColor,
+            this.awards[this._jumpIndex].type ,this.awards[this._jumpIndex].content,
+            this.SUDOKU_ITEM_TXT_SIZE, this.sudokuItemActiveTxtColor,
             this.sudokuItemActiveColor,
             this.sudokuItemActiveShadowColor
         );

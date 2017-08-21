@@ -13,7 +13,8 @@
 
      <canvas id="canvas" width="500px" height="500px" style="margin: 100px 0 0 100px"></canvas>
 </body>
-<script src="./src/dist/luckyDraw.min.js"></script>
+<script src="./src/ES6/Global.js"></script>
+<script src="./src/ES6/Sudoku.js"></script>
 <script>
     var canvas = document.getElementById('canvas'),
         context = canvas.getContext('2d');
@@ -23,13 +24,29 @@
         awardsRowLen: 3,
 
         awards: [
-            '30元话费', 'iphone8', '未中奖', 
-            'Macbook pro', 'img-http://tse4.mm.bing.net/th?id=OIP.5Oa_ZZeDMu0JOFKu-5NDGADIEs&w=137&h=201&c=7&qlt=90&o=4&dpr=2&pid=1.7', '火星一日游', 
-            '未中奖', 'img-http://tse2.mm.bing.net/th?id=OIP.lnWeNzoVmFXNZXe4bXh7lQDHEs&w=193&h=291&c=7&qlt=90&o=4&dpr=2&pid=1.7'
+            {type: 'text', content: '30元话费'},
+            {type: 'text', content: 'iphone8'},
+            {type: 'losing', content: '未中奖'},
+            {type: 'text', content: 'MackBook Pro'},
+            {type: 'image', content: 'https://img12.360buyimg.com/n7/jfs/t4807/209/1436278963/496606/8e486549/58f0884eNcec87657.jpg'},
+            {type: 'losing', content: '未中奖'},
+            {type: 'image', content: 'https://img11.360buyimg.com/n7/jfs/t3187/325/423764794/213696/f4eb1dbd/57b68142Nbe104228.jpg'},
+            {type: 'text', content: '火星一日游'}
         ],
         
         finish: function (index) {
-            alert('🎉恭喜您中得：' + this.awards[index])
+            switch(this.awards[index].type) {
+                case 'text':
+                    alert('🎉恭喜您中得：' + this.awards[index].content);
+                    break;
+                case 'image':
+                    if (index === 4)      alert('🎉恭喜您中得战争磨坊水冷机');
+                    else if (index === 6) alert('🎉恭喜您中得魔声耳机');
+                    break;
+                case 'losing':
+                    alert('💔很遗憾，您没有中奖~');
+                    break;
+            }
         }
     }).render(canvas, context);
 </script>
