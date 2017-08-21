@@ -2,7 +2,6 @@ class Sudoku extends Global {
     constructor (options) {
         super();
         
-        this.awardsRowLen =     options.awardsRowLen || 3;
         this.awards =           options.awards;
         this.sudokuSize =       options.sudokuSize;
         this.sudokuItemRadius = options.sudokuItemRadius || 8;
@@ -24,7 +23,8 @@ class Sudoku extends Global {
 
         this.finish = options.finish;
 
-        this.AWARDS_STEP = this.awardsRowLen - 1;
+        this.AWARDS_ROW_LENGTH = Math.floor((this.awards.length) / 4) + 1;
+        this.AWARDS_STEP = this.AWARDS_ROW_LENGTH - 1;
         this.AWARDS_LEN =  this.AWARDS_STEP * 4;
 
         this.LETF_TOP_POINT =     0;
@@ -32,8 +32,8 @@ class Sudoku extends Global {
         this.RIGHT_BOTTOM_POINT = this.AWARDS_STEP * 2;
         this.LEFT_BOTTOM_POINT =  this.AWARDS_STEP * 2 + this.AWARDS_STEP;
 
-        this.SUDOKU_ITEM_MARGIN =   (this.sudokuSize / this.awardsRowLen) / 6;
-        this.SUDOKU_ITEM_SIZE =     (this.sudokuSize / this.awardsRowLen) - this.SUDOKU_ITEM_MARGIN;
+        this.SUDOKU_ITEM_MARGIN =   (this.sudokuSize / this.AWARDS_ROW_LENGTH) / 6;
+        this.SUDOKU_ITEM_SIZE =     (this.sudokuSize / this.AWARDS_ROW_LENGTH) - this.SUDOKU_ITEM_MARGIN;
         this.SUDOKU_ITEM_TXT_SIZE = `bold ${this.SUDOKU_ITEM_SIZE * .12}px Helvetica`;
 
         this.BUTTON_SIZE = this.sudokuSize - (this.SUDOKU_ITEM_SIZE * 2 + this.SUDOKU_ITEM_MARGIN * 3);
