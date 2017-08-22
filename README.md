@@ -117,13 +117,6 @@ var sudoku = new Sudoku({
 sudoku.render(canvas, context);
 
 button.addEventListener('click', function (e) {
-    // ----- 初始化动画参数
-    sudoku._jumpingTime = 0;
-    sudoku._jumpTotalTime = Math.random() * 1000 + sudoku.duration;
-    sudoku._jumpChange = Math.random() * 3 + sudoku.velocity;
-    // -----
-
-    // 调用 sudoku 对象中的抽奖方法
     sudoku.luckyDraw(context);
 })
 ```
