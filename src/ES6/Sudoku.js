@@ -55,7 +55,7 @@ class Sudoku extends Global {
     };
 
     drawSudoku(context) {
-        context.clearRect(0, 0, canvas.width, canvas.height);
+        context.clearRect(0, 0, context.canvas.width, context.canvas.height);
 
         // 顶点坐标
         let maxPosition = this.AWARDS_STEP * this.SUDOKU_ITEM_SIZE + this.AWARDS_STEP * this.SUDOKU_ITEM_MARGIN;
@@ -257,13 +257,15 @@ class Sudoku extends Global {
     };
 
     sudokuItemMove(context) {
+        this._isAnimate = true;
+
         if (this._jumpIndex < this.AWARDS_LEN - 1)        this._jumpIndex ++;
         else if (this._jumpIndex >= this.AWARDS_LEN -1 )  this._jumpIndex = 0;
 
         this._jumpingTime += 100;
 
         if (this._jumpingTime >= this._jumpTotalTime) {
-            this.isAnimate = false;
+            this._isAnimate = false;
             if (this.finish) {
                 if (this._jumpIndex != 0)       this.finish(this._jumpIndex - 1)
                 else if (this._jumpIndex === 0) this.finish(this.AWARDS_LEN - 1);
@@ -287,7 +289,6 @@ class Sudoku extends Global {
     };
 
     luckyDraw(context) {
-        this.isAnimate = true;
         this._jumpingTime = 0;
         this._jumpTotalTime = Math.random() * 1000 + this.duration;
         this._jumpChange = Math.random() * 3 + this.velocity;
@@ -307,7 +308,7 @@ class Sudoku extends Global {
 
                     this.createButtonPath(context);
 
-                    if (context.isPointInPath(loc.x, loc.y) && !this.isAnimate) {
+                    if (context.isPointInPath(loc.x, loc.y) && !this._isAnimate) {
                         this.luckyDraw(context);
                     }
                 })
