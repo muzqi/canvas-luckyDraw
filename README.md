@@ -32,7 +32,9 @@
 **最简单的使用：**
 ``` html
 <body>
-     <canvas id="canvas" width="500px" height="500px"></canvas>
+     <canvas id="canvas" width="500px" height="500px">
+        Canvas not supported
+     </canvas>
 </body>
 <script src="./src/dist/luckyDraw.min.js"></script>
 <script>
@@ -78,7 +80,7 @@
 
 | 属性 | 是否必选 | 类型 | 备注 | 默认值 |
 | :-- | :--: | :-- | :-- | :--: |
-| sudokusize | 是 | *Number* | 九宫格的尺寸，一般为 canvas 的尺寸 | ø |
+| sudokuSize | 是 | *Number* | 九宫格的尺寸，一般为 canvas 的尺寸 | ø |
 | awards     | 是 | *Object* | 奖品信息，每组对象代表一个奖项，对象中有两个属性，type 和 content；<br>type 有三个可能的值：<br><br>`text：`将 content 中的值输出为普通文本；<br> `losing：`将 content 中的值输出普通文本，状态为未中奖；<br>`image：`将 content 中的图片地址渲染为图片。 | ø |
 | sudokuItemRadius | 否 | *Number* | 奖项小方块的圆角大小 | 8 |
 | sudokuItemUnactiveColor | 否 | *String* | 奖项方块的颜色 | rgb(255, 235, 236) |
@@ -92,8 +94,33 @@
 | buttonShadowColor | 否 | *String* | 按钮阴影的颜色 | rgb(253, 177, 1) |
 | duration | 否 | *Number* | 动画时长 | 4000 |
 | velocity | 否 | *Number* | 动画速率变化值（峰值） | 300 |
+| hasButton | 否 | *String* | 九宫格是否自带按钮；<br>若设置为 `false`，九宫格没有按钮，需要用户在外部自定义抽奖按钮；<br>抽奖按钮需调用对象的 `luckyDraw()` 方法；<br> | 'true' |
 | finish | 否 | *Callback* | 获取奖品信息后的回调，返回一个下标，根据该下标查找抽到什么奖品 | ø
 
+<br>
+
+> 手动调用抽奖的方法
+
+``` javascript
+var sudoku = new Sudoku({
+    // ...
+    hasButton: 'false'
+    // ...
+});
+
+sudoku.render(canvas, context);
+
+button.addEventListener('click', function (e) {
+    // ----- 初始化动画参数
+    sudoku._jumpingTime = 0;
+    sudoku._jumpTotalTime = Math.random() * 1000 + sudoku.duration;
+    sudoku._jumpChange = Math.random() * 3 + sudoku.velocity;
+    // -----
+
+    // 调用 sudoku 对象中的抽奖方法
+    sudoku.luckyDraw(context);
+})
+```
 
 <br>
 

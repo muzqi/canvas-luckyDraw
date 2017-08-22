@@ -21,6 +21,8 @@ class Sudoku extends Global {
         this.duration = options.duration || 4000;
         this.velocity = options.velocity || 300;
 
+        this.hasButton = options.hasButton || 'true';
+
         this.finish = options.finish;
 
         this.AWARDS_ROW_LENGTH = Math.floor((this.awards.length) / 4) + 1;
@@ -148,8 +150,6 @@ class Sudoku extends Global {
                 )
             }
         };
-
-        this.drawButton(context);
     };
 
     drawSudokuItem(context, x, y, size, radius, type, content, txtSize, txtColor, bgColor, shadowColor) {
@@ -256,7 +256,7 @@ class Sudoku extends Global {
         );
     };
 
-    animate(context) {
+    luckyDraw(context) {
         this.isAnimate = true;
 
         if (this._jumpIndex < this.AWARDS_LEN - 1)        this._jumpIndex ++;
@@ -274,6 +274,7 @@ class Sudoku extends Global {
         };
 
         this.drawSudoku(context);
+        if (this.hasButton === 'true') this.drawButton(context);
         this.drawSudokuItem(
             context,
             this._positions[this._jumpIndex].x, this._positions[this._jumpIndex].y,
@@ -284,38 +285,42 @@ class Sudoku extends Global {
             this.sudokuItemActiveShadowColor
         );
 
-        setTimeout(this.animate.bind(this, context), 50 + super.easeOut(this._jumpingTime, 0, this._jumpChange, this._jumpTotalTime));
+        setTimeout(this.luckyDraw.bind(this, context), 50 + super.easeOut(this._jumpingTime, 0, this._jumpChange, this._jumpTotalTime));
     };
 
     render(canvas, context) {
         this._canvasStyle = canvas.getAttribute('style');
         this.drawSudoku(context);
 
-        ['mousedown', 'touchstart'].forEach((event) => {
-            canvas.addEventListener(event, (e) => {
-                let loc = super.windowToCanvas(canvas, e);
+        if (this.hasButton === 'true') {
+            this.drawButton(context);
+            
+            ['mousedown', 'touchstart'].forEach((event) => {
+                canvas.addEventListener(event, (e) => {
+                    let loc = super.windowToCanvas(canvas, e);
 
+                    this.createButtonPath(context);
+
+                    if (context.isPointInPath(loc.x, loc.y) && !this.isAnimate) {
+                        this._jumpingTime = 0;
+                        this._jumpTotalTime = Math.random() * 1000 + this.duration;
+                        this._jumpChange = Math.random() * 3 + this.velocity;
+                        this.luckyDraw(context);
+                    }
+                })
+            });
+
+            canvas.addEventListener('mousemove', (e) => {
+                let loc2 = super.windowToCanvas(canvas, e);
                 this.createButtonPath(context);
 
-                if (context.isPointInPath(loc.x, loc.y) && !this.isAnimate) {
-                    this._jumpingTime = 0;
-                    this._jumpTotalTime = Math.random() * 1000 + this.duration;
-                    this._jumpChange = Math.random() * 3 + this.velocity;
-                    this.animate(context);
+                if (context.isPointInPath(loc2.x, loc2.y)) {
+                    canvas.setAttribute('style', `cursor: pointer;${this._canvasStyle}`);
+                } else {
+                    canvas.setAttribute('style', this._canvasStyle);
                 }
             })
-        });
-
-        canvas.addEventListener('mousemove', (e) => {
-            let loc2 = super.windowToCanvas(canvas, e);
-            this.createButtonPath(context);
-
-            if (context.isPointInPath(loc2.x, loc2.y)) {
-                canvas.setAttribute('style', `cursor: pointer;${this._canvasStyle}`);
-            } else {
-                canvas.setAttribute('style', this._canvasStyle);
-            }
-        })
+        }
     }
 
 }
