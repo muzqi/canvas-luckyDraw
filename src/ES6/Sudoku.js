@@ -256,9 +256,7 @@ class Sudoku extends Global {
         );
     };
 
-    luckyDraw(context) {
-        this.isAnimate = true;
-
+    sudokuItemMove(context) {
         if (this._jumpIndex < this.AWARDS_LEN - 1)        this._jumpIndex ++;
         else if (this._jumpIndex >= this.AWARDS_LEN -1 )  this._jumpIndex = 0;
 
@@ -285,8 +283,16 @@ class Sudoku extends Global {
             this.sudokuItemActiveShadowColor
         );
 
-        setTimeout(this.luckyDraw.bind(this, context), 50 + super.easeOut(this._jumpingTime, 0, this._jumpChange, this._jumpTotalTime));
+        setTimeout(this.sudokuItemMove.bind(this, context), 50 + super.easeOut(this._jumpingTime, 0, this._jumpChange, this._jumpTotalTime));
     };
+
+    luckyDraw(context) {
+        this.isAnimate = true;
+        this._jumpingTime = 0;
+        this._jumpTotalTime = Math.random() * 1000 + this.duration;
+        this._jumpChange = Math.random() * 3 + this.velocity;
+        this.sudokuItemMove(context);
+    }
 
     render(canvas, context) {
         this._canvasStyle = canvas.getAttribute('style');
@@ -302,9 +308,6 @@ class Sudoku extends Global {
                     this.createButtonPath(context);
 
                     if (context.isPointInPath(loc.x, loc.y) && !this.isAnimate) {
-                        this._jumpingTime = 0;
-                        this._jumpTotalTime = Math.random() * 1000 + this.duration;
-                        this._jumpChange = Math.random() * 3 + this.velocity;
                         this.luckyDraw(context);
                     }
                 })

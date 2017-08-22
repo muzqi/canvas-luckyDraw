@@ -250,7 +250,7 @@ class RouletteWheel extends Global {
      * 执行旋转，用于绑定在按钮上
      * @param {Obj} context 
      */
-    spin(context) {
+    luckyDraw(context) {
         this._isAnimate = true;
         this.value = '';
         this._spinningTime = 0;
@@ -275,7 +275,7 @@ class RouletteWheel extends Global {
                     context.beginPath();
                     context.arc(this.centerX, this.centerY, this.BUTTON_RADIUS, 0, Math.PI * 2, false);
                     if (context.isPointInPath(loc.x, loc.y)) {
-                        this.spin(context);
+                        this.luckyDraw(context);
                     }
                 }
             })
