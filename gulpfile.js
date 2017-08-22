@@ -8,7 +8,8 @@ const rename =  require('gulp-rename');
 // ----- 创建服务器
 gulp.task('webserver', () =>
     connect.server({
-        livereload: true
+        livereload: true,
+        port: 2333
     })
 );
 // -----
